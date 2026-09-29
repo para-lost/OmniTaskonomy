@@ -11,7 +11,7 @@ import subprocess
 import sys
 import time
 
-from omnitaskonomy.umm import read_options
+from omnitaskonomy.umm import read_options, verify_adapter_provenance
 from omnitaskonomy.data.common import sha256
 
 
@@ -109,8 +109,11 @@ def build_plan(args):
             if args.parameter_dtype != "bfloat16":
                 raise ValueError("--parameter-dtype is BAGEL-specific; set custom precision through --adapter-options")
             model_name = UMM_MODEL_NAME
-            model = {"class": "OmniTaskonomyUMM", **record}
+            record["adapter_provenance_file"] = str(directory / "adapter_provenance.json")
+            model = {"class": "OmniTaskonomyUMM", **record,
+                     "provenance_path": record["adapter_provenance_file"]}
             model.pop("checkpoint_files_sha256", None)
+            model.pop("adapter_provenance_file")
         else:
             model_name = MODEL_NAME
             model = {"class": "OmniTaskonomyBAGEL", **record,
@@ -161,6 +164,9 @@ def read_status(plan, benchmarks, mode="all", changed_after_ns=0):
         if saved.get("checkpoint_files_sha256") != plan.get("checkpoint_files_sha256"):
             raise ValueError(f"Saved evaluation checkpoint hashes differ: {configuration.parent}")
         verify_checkpoint_files(plan)
+        identity = verify_adapter_provenance(
+            plan["adapter_provenance_file"], plan["adapter"], plan["adapter_options"],
+        )
     model_name, = plan["config"]["model"]
     result_root = Path(plan["directory"]) / "results" / model_name
     candidates = list(result_root.glob("*/status.json"))
@@ -193,7 +199,8 @@ def read_status(plan, benchmarks, mode="all", changed_after_ns=0):
     if plan.get("judge_args"):
         result.update(judge_args=plan["judge_args"], judging=judging)
     if "adapter" in plan:
-        result.update(adapter=plan["adapter"], adapter_options=plan["adapter_options"])
+        result.update(adapter=plan["adapter"], adapter_options=plan["adapter_options"],
+                      adapter_provenance=identity)
         if "checkpoint_files_sha256" in plan:
             result["checkpoint_files_sha256"] = plan["checkpoint_files_sha256"]
     return result
@@ -303,6 +310,11 @@ def main(argv=None):
                     raise ValueError(f"Changed judge/policy requires a new output directory: {directory}")
                 if "adapter" in plan and previous.get("checkpoint_files_sha256") != plan.get("checkpoint_files_sha256"):
                     raise ValueError(f"Changed checkpoint files require a new output directory: {directory}")
+            if "adapter" in plan:
+                identity_path = Path(plan["adapter_provenance_file"])
+                cached_results = any(path.is_file() for path in (directory / "results").rglob("*"))
+                if identity_path.is_file() or cached_results:
+                    verify_adapter_provenance(identity_path, plan["adapter"], plan["adapter_options"])
             config_path.write_text(json.dumps(plan["config"], indent=2) + "\n")
             receipt.write_text(json.dumps(plan, indent=2) + "\n")
             print(shlex.join(plan["command"]), flush=True)

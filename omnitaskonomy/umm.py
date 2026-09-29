@@ -1,6 +1,7 @@
 """Model adapters share losses and parameter roles across training and analysis."""
 
 from dataclasses import dataclass, replace
+import fcntl
 import hashlib
 import importlib
 import inspect
@@ -125,4 +126,44 @@ def adapter_provenance(adapter, factory, options=None):
     identity = {"factory": factory, "options": options or {},
                 "files": sorted(files.values()), "adapter_sha256": sha256(source) if source else None}
     digest = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
-    return {"checkpoint_sha256": digest, "checkpoint_files_sha256": files, **identity}
+    return {"checkpoint_sha256": digest, "checkpoint_files_sha256": files,
+            "adapter_source": str(Path(source).resolve()) if source else None, **identity}
+
+
+def verify_adapter_provenance(path, factory, options=None):
+    """Validate a saved evaluation identity without loading the model."""
+    path = Path(path)
+    if not path.is_file():
+        raise ValueError(f"No saved adapter identity; cannot reuse or aggregate this evaluation: {path}")
+    receipt = json.loads(path.read_text())
+    if receipt.get("schema_version") != 1:
+        raise ValueError(f"Unsupported evaluation adapter identity: {path}")
+    identity = receipt["provenance"]
+    if identity["factory"] != factory or identity["options"] != (options or {}):
+        raise ValueError(f"Evaluation adapter configuration changed; use a new output directory: {path}")
+    files = dict(identity["checkpoint_files_sha256"])
+    if identity.get("adapter_source"):
+        files[identity["adapter_source"]] = identity["adapter_sha256"]
+    for name, expected in files.items():
+        asset = Path(name)
+        if not asset.is_file() or sha256(asset) != expected:
+            raise ValueError(f"Evaluation adapter asset changed; use a new output directory: {asset}")
+    return identity
+
+
+def record_adapter_provenance(path, adapter, factory, options=None):
+    """All workers must agree on the loaded adapter before predictions are reused."""
+    path = Path(path)
+    current = adapter_provenance(adapter, factory, options)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.with_suffix(".lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if path.exists():
+            previous = verify_adapter_provenance(path, factory, options)
+            if previous != current:
+                raise ValueError(f"Loaded evaluation adapter changed; use a new output directory: {path}")
+        else:
+            temporary = path.with_suffix(".tmp")
+            temporary.write_text(json.dumps({"schema_version": 1, "provenance": current}, indent=2) + "\n")
+            temporary.replace(path)
+    return current

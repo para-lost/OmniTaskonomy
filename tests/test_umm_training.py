@@ -14,7 +14,7 @@ from omnitaskonomy.data.common import sha256
 from omnitaskonomy.examples.tiny_umm import TinyUMM, create_adapter
 from omnitaskonomy.experiments import execute, load_experiment
 from omnitaskonomy.train import build_plan, main, parser, preview_commands, run
-from omnitaskonomy.umm import LossContext
+from omnitaskonomy.umm import BAGEL_ADAPTER, LossContext
 
 
 ADAPTER = "omnitaskonomy.examples.tiny_umm:create_adapter"
@@ -70,6 +70,149 @@ class UMMTrainingTests(unittest.TestCase):
     @staticmethod
     def weights(checkpoint):
         return torch.load(Path(checkpoint) / "model.pt", map_location="cpu", weights_only=True)
+
+    def test_unsupported_trainable_dtype_fails_before_optimizer_or_checkpoint(self):
+        adapter = create_adapter(model_path=self.base, device="cpu")
+        adapter.model.shared.weight = torch.nn.Parameter(adapter.model.shared.weight.to(torch.complex64))
+        plan = self.plan("r1", "transfer")
+        with patch("omnitaskonomy.umm_training.load_adapter", return_value=adapter), \
+                patch("omnitaskonomy.umm_training.torch.optim.AdamW") as optimizer, \
+                patch.object(adapter, "loss") as loss, \
+                patch.object(adapter, "save_checkpoint") as save:
+            with self.assertRaisesRegex(ValueError, "Unsupported.*shared.weight.*complex64"):
+                run(plan)
+        optimizer.assert_not_called()
+        loss.assert_not_called()
+        save.assert_not_called()
+        output = Path(plan["output_dir"])
+        self.assertFalse(list(output.rglob("trainable_parameters.json")))
+        self.assertFalse(list(output.rglob("completion.json")))
+        self.assertFalse(list(output.rglob("model.pt")))
+        self.assertFalse((output / "checkpoints.json").exists())
+
+    def test_low_precision_training_automatically_uses_fp32_weights_and_optimizer(self):
+        for dtype in (torch.bfloat16, torch.float16):
+            for autocast in (False, True):
+                with self.subTest(dtype=dtype, autocast=autocast):
+                    adapter = create_adapter(model_path=self.base, device="cpu")
+                    adapter.model.to(dtype=dtype)
+                    with torch.no_grad():
+                        adapter.model.understanding.bias.fill_(1.0)
+                    before = {name: value.clone() for name, value in adapter.model.state_dict().items()}
+                    parameters = dict(adapter.model.named_parameters())
+                    original_loss, adamw = adapter.loss, torch.optim.AdamW
+                    optimizers = []
+
+                    def loss(*args):
+                        with torch.autocast("cpu", dtype=torch.bfloat16, enabled=autocast):
+                            return original_loss(*args)
+
+                    def optimizer(*args, **kwargs):
+                        result = adamw(*args, **kwargs)
+                        optimizers.append(result)
+                        return result
+
+                    plan = self.plan("r1", "transfer", output=f"{dtype}-{autocast}")
+                    with patch("omnitaskonomy.umm_training.load_adapter", return_value=adapter), \
+                            patch("omnitaskonomy.umm_training.torch.optim.AdamW", side_effect=optimizer), \
+                            patch.object(adapter, "loss", side_effect=loss):
+                        record = json.loads(run(plan).read_text())["records"][0]
+                    trained = self.weights(record["checkpoint"])
+                    for name, parameter in adapter.model.named_parameters():
+                        self.assertIs(parameter, parameters[name])
+                        self.assertEqual(parameter.dtype, dtype if name == "scale" else torch.float32)
+                    torch.testing.assert_close(trained["scale"], before["scale"], rtol=0, atol=0)
+                    update = (trained["understanding.bias"] - before["understanding.bias"].float()).abs().max().item()
+                    self.assertGreater(update, 0)
+                    self.assertLess(update, torch.finfo(dtype).eps / 4)
+                    self.assertTrue(all(torch.isfinite(value).all() for value in trained.values()))
+                    self.assertTrue(optimizers[0].state)
+                    for parameter, state in optimizers[0].state.items():
+                        self.assertEqual(parameter.dtype, torch.float32)
+                        for key in ("exp_avg", "exp_avg_sq"):
+                            self.assertEqual(state[key].dtype, torch.float32)
+                            self.assertTrue(torch.isfinite(state[key]).all())
+
+    def test_bagel_training_defaults_to_loading_fp32_without_extra_options(self):
+        plan = self.plan(extra=("--adapter", BAGEL_ADAPTER))
+        self.assertEqual(plan["adapter_options"], {"dtype": "float32"})
+        replay = build_plan(parser().parse_args(preview_commands(plan)[0][2:]))
+        self.assertEqual(replay, plan)
+        self.assertEqual(self.plan()["adapter_options"], {})
+
+        options = self.root / "options.json"
+        options.write_text(json.dumps({"dtype": "bfloat16", "recompute_latent_positions": True}))
+        explicit = self.plan(extra=("--adapter", BAGEL_ADAPTER, "--adapter-options", str(options)))
+        self.assertEqual(explicit["adapter_options"], json.loads(options.read_text()))
+
+    def test_low_precision_fixed_base_with_fp32_training_and_bf16_autocast(self):
+        for dtype in (torch.bfloat16, torch.float16):
+            with self.subTest(dtype=dtype):
+                adapter = create_adapter(model_path=self.base, device="cpu")
+                adapter.model.shared.to(dtype=dtype).requires_grad_(False)
+                adapter.model.scale.data = adapter.model.scale.data.to(dtype)
+                with torch.no_grad():
+                    adapter.model.understanding.bias.fill_(1.0)
+                before = {name: value.clone() for name, value in adapter.model.state_dict().items()}
+                original_loss = adapter.loss
+
+                def autocast_loss(*args):
+                    with torch.autocast("cpu", dtype=torch.bfloat16):
+                        return original_loss(*args)
+
+                plan = self.plan("r1", "transfer", output=str(dtype))
+                with patch("omnitaskonomy.umm_training.load_adapter", return_value=adapter), \
+                        patch.object(adapter, "loss", side_effect=autocast_loss):
+                    record = json.loads(run(plan).read_text())["records"][0]
+                trained = self.weights(record["checkpoint"])
+                for name in ("shared.weight", "shared.bias", "scale"):
+                    self.assertEqual(trained[name].dtype, dtype)
+                    torch.testing.assert_close(trained[name], before[name], rtol=0, atol=0)
+                self.assertEqual(trained["understanding.weight"].dtype, torch.float32)
+                self.assertFalse(torch.equal(trained["understanding.weight"], before["understanding.weight"]))
+                update = (trained["understanding.bias"] - before["understanding.bias"]).abs().max().item()
+                self.assertGreater(update, 0)
+                self.assertLess(update, torch.finfo(torch.bfloat16).eps / 4)
+                self.assertTrue(all(torch.isfinite(value).all() for value in trained.values()))
+
+    def test_r4_promotes_shared_parameters_when_they_become_trainable(self):
+        def load(factory, model_path, **kwargs):
+            self.assertEqual(factory, ADAPTER)
+            adapter = create_adapter(model_path=model_path, **kwargs)
+            adapter.model.shared.to(dtype=torch.bfloat16)
+            original_loss = adapter.loss
+
+            def autocast_loss(*args):
+                with torch.autocast("cpu", dtype=torch.bfloat16):
+                    return original_loss(*args)
+
+            adapter.loss = autocast_loss
+            return adapter
+
+        plan = self.plan("r4")
+        with patch("omnitaskonomy.umm_training.load_adapter", side_effect=load), \
+                patch("omnitaskonomy.umm_training.torch.optim.AdamW", wraps=torch.optim.AdamW) as optimizer:
+            records = json.loads(run(plan).read_text())["records"]
+        self.assertEqual(optimizer.call_count, 2)
+        first, final = [self.weights(record["checkpoint"]) for record in records]
+        self.assertEqual(first["shared.weight"].dtype, torch.bfloat16)
+        torch.testing.assert_close(first["shared.weight"], self.weights(self.base)["shared.weight"].bfloat16(),
+                                   rtol=0, atol=0)
+        self.assertFalse(torch.equal(first["generation.weight"], self.weights(self.base)["generation.weight"]))
+        self.assertEqual(final["shared.weight"].dtype, torch.float32)
+        self.assertFalse(torch.equal(final["shared.weight"], first["shared.weight"].float()))
+
+    def test_fp64_trainable_parameters_remain_supported(self):
+        adapter = create_adapter(model_path=self.base, device="cpu")
+        adapter.model.double()
+        original_features = adapter._features
+        with patch("omnitaskonomy.umm_training.load_adapter", return_value=adapter), \
+                patch.object(adapter, "_features", side_effect=lambda *args: original_features(*args).double()):
+            record = json.loads(run(self.plan("r1", "transfer")).read_text())["records"][0]
+        trained = self.weights(record["checkpoint"])
+        self.assertEqual(trained["understanding.weight"].dtype, torch.float64)
+        self.assertFalse(torch.equal(trained["understanding.weight"],
+                                    self.weights(self.base)["understanding.weight"].double()))
 
     def test_all_six_recipes_execute_and_r4_unfreezes_second_stage(self):
         base = self.weights(self.base)

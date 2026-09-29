@@ -5,10 +5,14 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
+from types import ModuleType, SimpleNamespace
+from unittest.mock import Mock, patch
 
 from omnitaskonomy.evaluate import ROOT, UMM_MODEL_NAME, build_plan, main, parser, read_status
 from omnitaskonomy.eval_status import record_evaluation
 from omnitaskonomy.data.common import sha256
+from omnitaskonomy.umm import record_adapter_provenance, verify_adapter_provenance
 
 FACTORY = "omnitaskonomy.examples.tiny_umm:create_adapter"
 
@@ -136,11 +140,12 @@ class UMMEvaluationTests(unittest.TestCase):
                 model.understanding.weight[1, 0] = 1
             checkpoint = root / "custom.pt"
             torch.save(model.state_dict(), checkpoint)
-            plan = build_plan(parser().parse_args([
+            argv = [
                 "--adapter", FACTORY, "--model-path", str(root), "--checkpoint", str(checkpoint),
                 "--device", "cpu", "--benchmarks", "MMVP", "--output-dir", str(root / "eval"),
                 "--judge", "exact_matching",
-            ]))[0]
+            ]
+            plan = build_plan(parser().parse_args(argv))[0]
             config = dict(plan["config"]["model"][UMM_MODEL_NAME])
             wrapper = getattr(vlmeval.vlm, config.pop("class"))(**config)
             self.assertFalse(wrapper.adapter.model.training)
@@ -171,6 +176,160 @@ class UMMEvaluationTests(unittest.TestCase):
             self.assertEqual(result["adapter"], FACTORY)
             self.assertEqual(result["adapter_options"], {})
             self.assertEqual(result["metrics"]["MMVP"]["split=test|Overall"], 1.0)
+            self.assertEqual(result["adapter_provenance"]["checkpoint_files_sha256"],
+                             {str(checkpoint): sha256(checkpoint)})
+            with torch.no_grad():
+                model.shared.weight.add_(1)
+            torch.save(model.state_dict(), checkpoint)
+            with patch("omnitaskonomy.evaluate.subprocess.run") as launch:
+                for mode in (["--reuse"], ["--aggregate-only"]):
+                    with self.assertRaisesRegex(ValueError, "adapter asset changed"):
+                        main(argv + mode)
+                launch.assert_not_called()
+
+
+class UMMEvaluationIdentityTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.base = self.root / "base"
+        self.base.mkdir()
+        self.checkpoint = self.root / "checkpoint"
+        self.checkpoint.mkdir()
+        self.assets = [self.checkpoint / "weights.pt", self.base / "config.json",
+                       self.base / "tokenizer.json", self.base / "base.pt"]
+        for path in self.assets:
+            path.write_text("original asset")
+        self.source = self.root / "adapter.py"
+        self.source.write_text("# original adapter source\n")
+        module_name = f"fixture_eval_adapter_{id(self)}"
+        module = ModuleType(module_name)
+        module.__file__ = str(self.source)
+        sys.modules[module_name] = module
+        self.addCleanup(sys.modules.pop, module_name)
+        self.factory = f"{module_name}:create_adapter"
+        self.adapter = SimpleNamespace(checkpoint_files=self.assets, model=Mock(), generate=Mock(return_value="A"))
+
+    def arguments(self, *, run_file=False):
+        argv = ["--output-dir", str(self.root / "eval"), "--benchmarks", "MMVP", "--judge", "exact_matching"]
+        if run_file:
+            path = self.root / "checkpoints.json"
+            path.write_text(json.dumps({"schema_version": 1, "records": [{
+                "task": "tiny", "recipe": "i2t-only", "stage": "i2t", "seed": 42,
+                "model_path": str(self.base), "checkpoint": str(self.checkpoint),
+                "adapter": self.factory, "adapter_options": {}, "device": "cpu",
+                "checkpoint_files_sha256": {"weights.pt": sha256(self.assets[0])},
+            }]}))
+            return argv + ["--run-file", str(path)]
+        return argv + ["--adapter", self.factory, "--model-path", str(self.base),
+                       "--checkpoint", str(self.assets[0]), "--device", "cpu"]
+
+    def completed(self, argv):
+        plan = build_plan(parser().parse_args(argv))[0]
+        directory = Path(plan["directory"])
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "vlmeval.json").write_text(json.dumps(plan["config"]))
+        (directory / "evaluation.json").write_text(json.dumps(plan))
+        record_adapter_provenance(plan["adapter_provenance_file"], self.adapter, self.factory)
+        record_evaluation(directory / "results" / UMM_MODEL_NAME / "run-1", "MMVP", "done",
+                          judge="exact_matching", scores={"Overall": 0.5})
+        return plan
+
+    def test_direct_checkpoint_base_config_tokenizer_and_source_changes_reject_cached_results(self):
+        argv = self.arguments()
+        plan = self.completed(argv)
+        self.assertEqual(read_status(plan, ["MMVP"])["metrics"]["MMVP"]["Overall"], 0.5)
+        for path in [*self.assets, self.source]:
+            with self.subTest(asset=path.name):
+                original = path.read_bytes()
+                path.write_bytes(original + b"changed")
+                with self.assertRaisesRegex(ValueError, "adapter asset changed"):
+                    read_status(plan, ["MMVP"])
+                with patch("omnitaskonomy.evaluate.subprocess.run") as launch:
+                    for mode in (["--reuse"], ["--aggregate-only"]):
+                        with self.assertRaisesRegex(ValueError, "adapter asset changed"):
+                            main(argv + mode)
+                    launch.assert_not_called()
+                path.write_bytes(original)
+
+    def test_training_receipt_also_checks_assets_outside_the_saved_checkpoint(self):
+        argv = self.arguments(run_file=True)
+        self.completed(argv)
+        self.assets[2].write_text("changed tokenizer")
+        with patch("omnitaskonomy.evaluate.subprocess.run") as launch:
+            with self.assertRaisesRegex(ValueError, "adapter asset changed"):
+                main(argv + ["--reuse"])
+            launch.assert_not_called()
+
+    def test_unchanged_identity_aggregates_without_loading_a_model(self):
+        argv = self.arguments()
+        plan = self.completed(argv)
+        with patch("omnitaskonomy.umm.load_adapter", side_effect=AssertionError("model load")), \
+                patch("omnitaskonomy.evaluate.subprocess.run", side_effect=AssertionError("worker launch")), \
+                contextlib.redirect_stdout(io.StringIO()):
+            main(argv + ["--aggregate-only"])
+        summary = json.loads((self.root / "eval/summary.json").read_text())
+        identity = verify_adapter_provenance(plan["adapter_provenance_file"], self.factory)
+        self.assertEqual(summary["runs"][0]["adapter_provenance"], identity)
+
+    def test_unsigned_old_results_are_rejected_even_without_an_evaluation_receipt(self):
+        argv = self.arguments()
+        plan = self.completed(argv)
+        directory = Path(plan["directory"])
+        Path(plan["adapter_provenance_file"]).unlink()
+        with patch("omnitaskonomy.evaluate.subprocess.run") as launch:
+            for remove_receipt in (False, True):
+                if remove_receipt:
+                    (directory / "evaluation.json").unlink()
+                for mode in (["--reuse"], ["--mode", "eval"]):
+                    with self.assertRaisesRegex(ValueError, "No saved adapter identity"):
+                        main(argv + mode)
+                launch.assert_not_called()
+        self.assertFalse(Path(plan["adapter_provenance_file"]).exists())
+
+    def test_failed_first_model_load_can_retry_without_any_prediction_cache(self):
+        argv = self.arguments()
+        plan = build_plan(parser().parse_args(argv))[0]
+        directory = Path(plan["directory"])
+        directory.mkdir(parents=True)
+        (directory / "vlmeval.json").write_text(json.dumps(plan["config"]))
+        (directory / "evaluation.json").write_text(json.dumps(plan))
+        (directory / "results" / UMM_MODEL_NAME / "empty-run").mkdir(parents=True)
+        with patch("omnitaskonomy.evaluate.subprocess.run", side_effect=RuntimeError("factory retry")) as launch, \
+                contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(RuntimeError, "factory retry"):
+                main(argv + ["--reuse"])
+        launch.assert_called_once()
+        self.assertFalse(Path(plan["adapter_provenance_file"]).exists())
+
+    def test_worker_rejects_changed_actual_asset_set_before_generation(self):
+        sys.path.insert(0, str(ROOT / "VLMEvalKit"))
+        import vlmeval.config
+        from omnitaskonomy.umm_vlmeval_adapter import OmniTaskonomyUMM
+
+        plan = build_plan(parser().parse_args(self.arguments()))[0]
+        config = dict(plan["config"]["model"][UMM_MODEL_NAME])
+        config.pop("class")
+        with patch("omnitaskonomy.umm_vlmeval_adapter.load_adapter", return_value=self.adapter):
+            OmniTaskonomyUMM(**config)
+            path = Path(plan["adapter_provenance_file"])
+            original = path.read_bytes()
+            extra = self.base / "new-tokenizer.json"
+            extra.write_text("new tokenizer selected by the factory")
+            self.adapter.checkpoint_files = [*self.assets, extra]
+            with self.assertRaisesRegex(ValueError, "Loaded evaluation adapter changed"):
+                OmniTaskonomyUMM(**config)
+        self.assertEqual(path.read_bytes(), original)
+        self.adapter.generate.assert_not_called()
+
+    def test_concurrent_workers_publish_one_consistent_identity(self):
+        path = self.root / "eval/seed_42/adapter_provenance.json"
+        with ThreadPoolExecutor(max_workers=4) as workers:
+            results = list(workers.map(lambda _: record_adapter_provenance(path, self.adapter, self.factory), range(8)))
+        self.assertTrue(all(result == results[0] for result in results))
+        self.assertEqual(verify_adapter_provenance(path, self.factory), results[0])
+        self.assertFalse(path.with_suffix(".tmp").exists())
 
 
 if __name__ == "__main__":

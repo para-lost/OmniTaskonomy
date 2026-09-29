@@ -39,8 +39,19 @@ def _checkpoint_files(directory):
 @torch.enable_grad()
 def _train_stage(adapter, inventory, plan, stage, seed, model_seed, directory):
     receipt = inventory.apply("generation" if stage["freeze"] else "all")
-    _write_json(directory / "logs/trainable_parameters.json", receipt)
     parameters = inventory.parameters()
+    # Promote optimizer weights in place so tied parameters keep their identity.
+    for parameter in parameters:
+        if parameter.dtype in (torch.float16, torch.bfloat16):
+            parameter.data = parameter.data.float()
+    unsupported = [f"{name} ({parameter.dtype})" for name, (parameter, _, _) in inventory.entries.items()
+                   if parameter.requires_grad and parameter.dtype not in (torch.float32, torch.float64)]
+    if unsupported:
+        details = ", ".join(unsupported[:8])
+        if len(unsupported) > 8:
+            details += f", ... ({len(unsupported) - 8} more)"
+        raise ValueError(f"Unsupported custom UMM trainable parameter dtypes: {details}")
+    _write_json(directory / "logs/trainable_parameters.json", receipt)
     optimizer = torch.optim.AdamW(parameters, lr=plan["learning_rate"], betas=(0.9, 0.95),
                                   eps=1e-15, weight_decay=0)
     scheduler = get_constant_schedule_with_warmup(optimizer, stage["warmup_steps"])

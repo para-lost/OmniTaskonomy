@@ -11,7 +11,7 @@ import sys
 import yaml
 
 from omnitaskonomy.data.common import sha256
-from omnitaskonomy.umm import read_options
+from omnitaskonomy.umm import BAGEL_ADAPTER, read_options
 
 ROOT = Path(__file__).resolve().parents[1]
 BAGEL = ROOT / "Bagel"
@@ -210,6 +210,8 @@ def build_plan(args):
             "max_tokens_per_sample": args.max_tokens_per_sample, "stages": stages}
     if args.adapter:
         options = read_options(args.adapter_options)
+        if args.adapter == BAGEL_ADAPTER:
+            options.setdefault("dtype", "float32")
         plan.update(adapter=args.adapter, adapter_options=options, device=args.device)
         settings = {key: value.resolve() if isinstance(value, Path) else value
                     for key, value in vars(args).items() if key != "dry_run" and value is not None}
