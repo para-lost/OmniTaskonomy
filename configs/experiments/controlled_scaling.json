@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "controlled_scaling",
+  "paper_commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+  "description": "Controlled I2I-budget scaling, six recipes and four generation budgets.",
+  "notes": [
+    "Figure scaling panel b. Baseline is trained once per task/seed and reused across plot budgets.",
+    "Fixed seed-42 stage-1 checkpoint is shared by stage-2 seeds42/123/456; R2 and R6 reuse the same unfrozen stage1.",
+    "R3 preserves the historical single optimizer across Mixed and I2T phases; the paper appendix instead describes a reset for multi-stage recipes.",
+    "R4 stage 1 trains generation-specific parameters while freezing understanding and shared parameters; stage 2 trains Mixed with the standard trainable parameters.",
+    "These are executable protocol presets, not a claim of newly reproduced scores or currently downloadable historical checkpoints."
+  ],
+  "sources": [
+    {
+      "path": "gen4und/repro/reorder_dropout_aligned_run_20260924/manifest.json",
+      "sha256": "0bba2c07aa5ca6a998a5f35fbf3e649eb37310b099abffdfd0906e9084a7d0f7"
+    },
+    {
+      "path": "gen4und/repro/reorder_third_seed_rerun_20260924/manifest.json",
+      "sha256": "37162e892e2ddd786d43ae6dba0379d4561c9aaead11ce5a02429381d53d7aa1"
+    }
+  ],
+  "training": {
+    "suite": "controlled",
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "model_seeds": [
+      4396,
+      4396,
+      4396
+    ],
+    "i2i_seed": 42,
+    "i2t_pool": 1000,
+    "i2t_budget": 15000,
+    "condition_dropout": 0.1
+  },
+  "jobs": [
+    {"id": "jigsaw_r1", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r1"}},
+    {"id": "jigsaw_stage1_3k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 1876, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_stage1_3k_frozen", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 1876, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_r2_3k", "plot_i2i_label": "3k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 1876}, "stage1_from": "jigsaw_stage1_3k"},
+    {"id": "jigsaw_r3_3k", "plot_i2i_label": "3k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 1876}},
+    {"id": "jigsaw_r4_3k", "plot_i2i_label": "3k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 1876}, "stage1_from": "jigsaw_stage1_3k_frozen"},
+    {"id": "jigsaw_r5_3k", "plot_i2i_label": "3k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 1876}},
+    {"id": "jigsaw_r6_3k", "plot_i2i_label": "3k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 1876}, "stage1_from": "jigsaw_stage1_3k"},
+    {"id": "jigsaw_stage1_10k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 9380, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_stage1_10k_frozen", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 9380, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_r2_10k", "plot_i2i_label": "10k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 9380}, "stage1_from": "jigsaw_stage1_10k"},
+    {"id": "jigsaw_r3_10k", "plot_i2i_label": "10k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 9380}},
+    {"id": "jigsaw_r4_10k", "plot_i2i_label": "10k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 9380}, "stage1_from": "jigsaw_stage1_10k_frozen"},
+    {"id": "jigsaw_r5_10k", "plot_i2i_label": "10k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 9380}},
+    {"id": "jigsaw_r6_10k", "plot_i2i_label": "10k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 9380}, "stage1_from": "jigsaw_stage1_10k"},
+    {"id": "jigsaw_stage1_30k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 30016, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_stage1_30k_frozen", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 30016, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_r2_30k", "plot_i2i_label": "30k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 30016}, "stage1_from": "jigsaw_stage1_30k"},
+    {"id": "jigsaw_r3_30k", "plot_i2i_label": "30k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 30016}},
+    {"id": "jigsaw_r4_30k", "plot_i2i_label": "30k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 30016}, "stage1_from": "jigsaw_stage1_30k_frozen"},
+    {"id": "jigsaw_r5_30k", "plot_i2i_label": "30k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 30016}},
+    {"id": "jigsaw_r6_30k", "plot_i2i_label": "30k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 30016}, "stage1_from": "jigsaw_stage1_30k"},
+    {"id": "jigsaw_stage1_100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 100000, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_stage1_100k_frozen", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 100000, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_r2_100k", "plot_i2i_label": "100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 100000}, "stage1_from": "jigsaw_stage1_100k"},
+    {"id": "jigsaw_r3_100k", "plot_i2i_label": "100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 100000}},
+    {"id": "jigsaw_r4_100k", "plot_i2i_label": "100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 100000}, "stage1_from": "jigsaw_stage1_100k_frozen"},
+    {"id": "jigsaw_r5_100k", "plot_i2i_label": "100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 100000}},
+    {"id": "jigsaw_r6_100k", "plot_i2i_label": "100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 100000}, "stage1_from": "jigsaw_stage1_100k"},
+    {"id": "zoomin_r1", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r1"}},
+    {"id": "zoomin_stage1_3k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 1876, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_stage1_3k_frozen", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 1876, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_r2_3k", "plot_i2i_label": "3k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 1876}, "stage1_from": "zoomin_stage1_3k"},
+    {"id": "zoomin_r3_3k", "plot_i2i_label": "3k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 1876}},
+    {"id": "zoomin_r4_3k", "plot_i2i_label": "3k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 1876}, "stage1_from": "zoomin_stage1_3k_frozen"},
+    {"id": "zoomin_r5_3k", "plot_i2i_label": "3k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 1876}},
+    {"id": "zoomin_r6_3k", "plot_i2i_label": "3k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 1876}, "stage1_from": "zoomin_stage1_3k"},
+    {"id": "zoomin_stage1_10k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 9380, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_stage1_10k_frozen", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 9380, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_r2_10k", "plot_i2i_label": "10k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 9380}, "stage1_from": "zoomin_stage1_10k"},
+    {"id": "zoomin_r3_10k", "plot_i2i_label": "10k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 9380}},
+    {"id": "zoomin_r4_10k", "plot_i2i_label": "10k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 9380}, "stage1_from": "zoomin_stage1_10k_frozen"},
+    {"id": "zoomin_r5_10k", "plot_i2i_label": "10k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 9380}},
+    {"id": "zoomin_r6_10k", "plot_i2i_label": "10k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 9380}, "stage1_from": "zoomin_stage1_10k"},
+    {"id": "zoomin_stage1_30k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 30016, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_stage1_30k_frozen", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 30016, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_r2_30k", "plot_i2i_label": "30k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 30016}, "stage1_from": "zoomin_stage1_30k"},
+    {"id": "zoomin_r3_30k", "plot_i2i_label": "30k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 30016}},
+    {"id": "zoomin_r4_30k", "plot_i2i_label": "30k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 30016}, "stage1_from": "zoomin_stage1_30k_frozen"},
+    {"id": "zoomin_r5_30k", "plot_i2i_label": "30k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 30016}},
+    {"id": "zoomin_r6_30k", "plot_i2i_label": "30k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 30016}, "stage1_from": "zoomin_stage1_30k"},
+    {"id": "zoomin_stage1_100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 100000, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_stage1_100k_frozen", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 100000, "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_r2_100k", "plot_i2i_label": "100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2i_budget": 100000}, "stage1_from": "zoomin_stage1_100k"},
+    {"id": "zoomin_r3_100k", "plot_i2i_label": "100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r3", "i2i_budget": 100000}},
+    {"id": "zoomin_r4_100k", "plot_i2i_label": "100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r4", "i2i_budget": 100000}, "stage1_from": "zoomin_stage1_100k_frozen"},
+    {"id": "zoomin_r5_100k", "plot_i2i_label": "100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r5", "i2i_budget": 100000}},
+    {"id": "zoomin_r6_100k", "plot_i2i_label": "100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r6", "i2i_budget": 100000}, "stage1_from": "zoomin_stage1_100k"}
+  ]
+}

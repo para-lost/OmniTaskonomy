@@ -1,0 +1,22 @@
+{
+  "source": "gen4und/VLMEvalKit",
+  "source_kind": "tracked working-tree files",
+  "upstream": "https://github.com/open-compass/VLMEvalKit",
+  "revision": "d508184b3dbe5cb51a67aa78b6c742dfcecc9375",
+  "revision_scope": "gen4und repository; source hashes also capture uncommitted changes",
+  "source_manifest": "SOURCE_MANIFEST.json",
+  "source_manifest_sha256": "5e8cdc9e035bcffd9f9a9511fb4ed9cb3f581aaa8166e39d4b556abfc3db7e8b",
+  "license": "LICENSE",
+  "license_sha256": "5f0538b314b13e062d1fed3991ec1868cc71c49d0838cd7bc6ef563be06a5ad3",
+  "changes": {
+    "vlmeval/config.py": "Replace machine-specific BAGEL experiment registry with a portable entry and register BAGEL and custom UMM release adapters.",
+    "run.py": "Record completion/failures and isolate run directories for multi-seed aggregation; inference and scoring logic are retained.",
+    "vlmeval/vlm/bagel_vlm.py": "Use the supplied model path as the default base directory instead of a private filesystem path.",
+    "setup.py": "Use package metadata without a separate vendored README; release instructions live in the root README.",
+    "vlmeval/api/gpt.py": "Log the model name without API credentials or endpoint details.",
+    "vlmeval/dataset/image_mcq.py": "Accept explicit LLM-first judging for OmniTaskonomy and isolate its score caches from historical matching.",
+    "vlmeval/dataset/utils/multiple_choice.py": "Use LLM-first answer extraction when requested; fall back to exact matching only on API failure, with per-question logs."
+  },
+  "selection": "Tracked runtime source, assets, packaging, and historical BAGEL inference modules.",
+  "excluded": "Documentation, Markdown documents, environment/credential files, results, predictions, weights, caches, Git metadata, notebooks, cluster launchers, and BAGEL training/evaluation extras."
+}

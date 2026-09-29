@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "controlled_i2t_scaling_historical",
+  "paper_commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+  "description": "Figure scaling panel c: fixed100kI2I with1k/3k/10k/30kI2T pools and constant30kI2T visits.",
+  "training": {
+    "suite": "controlled",
+    "seeds": [
+      42,
+      123
+    ],
+    "model_seeds": [
+      4396,
+      4396
+    ],
+    "i2i_seed": 42,
+    "i2t_pool": 1000,
+    "i2t_budget": 30000,
+    "condition_dropout": 0.1,
+    "i2i_budget": 100000
+  },
+  "notes": [
+    "The historical CSV has only two data seeds42/123. The current paper caption describes three seeds; a third historical panel-c run has not been located.",
+    "The three-seed preset is an explicit extension for new runs, not verified historical reproduction.",
+    "I2T epochs are30/10/3/1 for1k/3k/10k/30k pools respectively; requested visits stay30000, rounded to30016."
+  ],
+  "sources": [
+    {
+      "path": "gen4und/eval/jiaxin/recipe_sweep_export/README.md",
+      "sha256": "920b336f7188181c3ef2285041a8e847ec8d34dd79ad435d29ab9e896c6e9993"
+    },
+    {
+      "path": "gen4und/eval/jiaxin/recipe_sweep_export/recipe_curves_data.csv",
+      "sha256": "9941487576901dc5a6cc4870a00573931a38b924becc86f6290d573ada9ed91a"
+    }
+  ],
+  "jobs": [
+    {"id": "jigsaw_stage1_100k", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "jigsaw_r1_i2t1000", "plot_i2t_pool": 1000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 1000}},
+    {"id": "jigsaw_r2_i2t1000", "plot_i2t_pool": 1000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 1000}, "stage1_from": "jigsaw_stage1_100k"},
+    {"id": "jigsaw_r1_i2t3000", "plot_i2t_pool": 3000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 3000}},
+    {"id": "jigsaw_r2_i2t3000", "plot_i2t_pool": 3000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 3000}, "stage1_from": "jigsaw_stage1_100k"},
+    {"id": "jigsaw_r1_i2t10000", "plot_i2t_pool": 10000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 10000}},
+    {"id": "jigsaw_r2_i2t10000", "plot_i2t_pool": 10000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 10000}, "stage1_from": "jigsaw_stage1_100k"},
+    {"id": "jigsaw_r1_i2t30000", "plot_i2t_pool": 30000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 30000}},
+    {"id": "jigsaw_r2_i2t30000", "plot_i2t_pool": 30000, "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 30000}, "stage1_from": "jigsaw_stage1_100k"},
+    {"id": "zoomin_stage1_100k", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396]}},
+    {"id": "zoomin_r1_i2t1000", "plot_i2t_pool": 1000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 1000}},
+    {"id": "zoomin_r2_i2t1000", "plot_i2t_pool": 1000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 1000}, "stage1_from": "zoomin_stage1_100k"},
+    {"id": "zoomin_r1_i2t3000", "plot_i2t_pool": 3000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 3000}},
+    {"id": "zoomin_r2_i2t3000", "plot_i2t_pool": 3000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 3000}, "stage1_from": "zoomin_stage1_100k"},
+    {"id": "zoomin_r1_i2t10000", "plot_i2t_pool": 10000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 10000}},
+    {"id": "zoomin_r2_i2t10000", "plot_i2t_pool": 10000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 10000}, "stage1_from": "zoomin_stage1_100k"},
+    {"id": "zoomin_r1_i2t30000", "plot_i2t_pool": 30000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r1", "i2t_pool": 30000}},
+    {"id": "zoomin_r2_i2t30000", "plot_i2t_pool": 30000, "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "recipe": "r2", "i2t_pool": 30000}, "stage1_from": "zoomin_stage1_100k"}
+  ]
+}

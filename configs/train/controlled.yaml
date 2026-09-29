@@ -1,0 +1,20 @@
+# Scaling protocol; the launcher rounds I2T visits to complete updates.
+i2i_budget: 30016
+i2t_budget: 15000
+i2t_pool: 1000
+batch_size_per_gpu: 16
+effective_i2t_batch: 64
+learning_rate: 0.00002
+warmup_i2i: 50
+warmup_i2t: 8
+condition_dropout: 0.1
+mixed_generation_batch:
+  1876: 4
+  9380: 20
+  30016: 64
+  100000: 212
+curriculum_generation_batch:
+  1876: 8
+  9380: 40
+  30016: 128
+  100000: 428

@@ -1,0 +1,193 @@
+{
+  "source_repository": "gen4und",
+  "source_commit": "d508184b3dbe5cb51a67aa78b6c742dfcecc9375",
+  "note": "Files copied from the research working tree; hashes identify original inputs, including local changes. Release usage and attribution are in the root README.md.",
+  "files": [
+    {
+      "source": "Bagel/LICENSE",
+      "destination": "Bagel/LICENSE",
+      "source_sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
+    },
+    {
+      "source": "Bagel/data/__init__.py",
+      "destination": "Bagel/data/__init__.py",
+      "source_sha256": "15397311214f7a0755342060a6722a15cbed23bc5a94948bbd2ba42d36b92f9e"
+    },
+    {
+      "source": "Bagel/data/data_utils.py",
+      "destination": "Bagel/data/data_utils.py",
+      "source_sha256": "97583627a4cc253d9973129741ce603307769dd4a28f21585b115e9d23bb53c6"
+    },
+    {
+      "source": "Bagel/data/dataset_base.py",
+      "destination": "Bagel/data/dataset_base.py",
+      "source_sha256": "246f1f254432e093fb5bfb86db2479c1bc1a72f63dcd116abcbda39aed8b3364"
+    },
+    {
+      "source": "Bagel/data/distributed_iterable_dataset.py",
+      "destination": "Bagel/data/distributed_iterable_dataset.py",
+      "source_sha256": "c2f51453a0b79ce60f7ca61cb3a4ae57a75d542776c554b9ba0dd01c3d386777"
+    },
+    {
+      "source": "Bagel/data/transforms.py",
+      "destination": "Bagel/data/transforms.py",
+      "source_sha256": "39b215df50a2eefd920a65886925e7d933161d55f4bcb51fb04e5921dc763ce4"
+    },
+    {
+      "source": "Bagel/inferencer.py",
+      "destination": "Bagel/inferencer.py",
+      "source_sha256": "98e200ca3b2a1fc724e289f9af8d7974327fb3c663e3bf8820f2b93c63e3ab44"
+    },
+    {
+      "source": "Bagel/modeling/__init__.py",
+      "destination": "Bagel/modeling/__init__.py",
+      "source_sha256": "1e1ecaf1647bcc5bf62cc435a594b97e664cdd7758cce7b48c39e1725a3d5099"
+    },
+    {
+      "source": "Bagel/modeling/autoencoder.py",
+      "destination": "Bagel/modeling/autoencoder.py",
+      "source_sha256": "57941c0c14b9487e9a95f4d048755ab5ad4b75d144874009e3ba8a0302e68efa"
+    },
+    {
+      "source": "Bagel/modeling/bagel/__init__.py",
+      "destination": "Bagel/modeling/bagel/__init__.py",
+      "source_sha256": "59d4106be415927bbc41c325b7a5df52e3a02ec1c701aa9655dd5e2f1aeaf90e"
+    },
+    {
+      "source": "Bagel/modeling/bagel/bagel.py",
+      "destination": "Bagel/modeling/bagel/bagel.py",
+      "source_sha256": "dc1975b5078014cbb9ae350d89040ac0c5705ffcf9fbb0a4e61ceddcc5792d5e"
+    },
+    {
+      "source": "Bagel/modeling/bagel/modeling_utils.py",
+      "destination": "Bagel/modeling/bagel/modeling_utils.py",
+      "source_sha256": "6fe5eed0513a462c28cccd8ec86d5496b774667fa6f04be8f70e6595baf3f323"
+    },
+    {
+      "source": "Bagel/modeling/bagel/qwen2_navit.py",
+      "destination": "Bagel/modeling/bagel/qwen2_navit.py",
+      "source_sha256": "d85e6d0448aa137f338abab5bda6820c5de0c32b5c08afb529d329fed3348c49"
+    },
+    {
+      "source": "Bagel/modeling/bagel/siglip_navit.py",
+      "destination": "Bagel/modeling/bagel/siglip_navit.py",
+      "source_sha256": "400df7042566aa1fdbb2a63b72261ebccd0fc9e890f9f883287d84082e9311eb"
+    },
+    {
+      "source": "Bagel/modeling/cache_utils/taylorseer.py",
+      "destination": "Bagel/modeling/cache_utils/taylorseer.py",
+      "source_sha256": "353a560c7b3164766f797020322a8e40d329ee3c3cc09c656dbe8d5522068dae"
+    },
+    {
+      "source": "Bagel/modeling/qwen2/__init__.py",
+      "destination": "Bagel/modeling/qwen2/__init__.py",
+      "source_sha256": "c98f7445ec6af14d32d650436b754f74c281e91d22e82a6115264c355bd75ecf"
+    },
+    {
+      "source": "Bagel/modeling/qwen2/configuration_qwen2.py",
+      "destination": "Bagel/modeling/qwen2/configuration_qwen2.py",
+      "source_sha256": "541074d10078a144914b6104dbab6af0c6030ad2695526896c1e6231603136a1"
+    },
+    {
+      "source": "Bagel/modeling/qwen2/modeling_qwen2.py",
+      "destination": "Bagel/modeling/qwen2/modeling_qwen2.py",
+      "source_sha256": "c8935e385d15836a7ece216ae9a3414035e085db50f6bc906aeef791119a56ee"
+    },
+    {
+      "source": "Bagel/modeling/qwen2/tokenization_qwen2.py",
+      "destination": "Bagel/modeling/qwen2/tokenization_qwen2.py",
+      "source_sha256": "5add04cc0ef8e8549151cc7babe733d93ed8739aa265acb49073c0ad129abd48"
+    },
+    {
+      "source": "Bagel/modeling/qwen2/tokenization_qwen2_fast.py",
+      "destination": "Bagel/modeling/qwen2/tokenization_qwen2_fast.py",
+      "source_sha256": "7f4177e86f80e3feabc67d32ff6135896c280f37cceaec2f43703e50aef82b9c"
+    },
+    {
+      "source": "Bagel/modeling/siglip/__init__.py",
+      "destination": "Bagel/modeling/siglip/__init__.py",
+      "source_sha256": "1a0470f5ee0139f8387626302107efedb2349d5caef8ea23ed3416cbc5229c60"
+    },
+    {
+      "source": "Bagel/modeling/siglip/configuration_siglip.py",
+      "destination": "Bagel/modeling/siglip/configuration_siglip.py",
+      "source_sha256": "3064249ae6b6f330a69fa9f1d79dd48b4e12f2ba9aae11d805625275299913ef"
+    },
+    {
+      "source": "Bagel/modeling/siglip/convert_siglip_to_hf.py",
+      "destination": "Bagel/modeling/siglip/convert_siglip_to_hf.py",
+      "source_sha256": "91acbaf1745609c72d26ca9c95b626b3fe84da193b7c6b9f3ecfc2747b2738dc"
+    },
+    {
+      "source": "Bagel/modeling/siglip/image_processing_siglip.py",
+      "destination": "Bagel/modeling/siglip/image_processing_siglip.py",
+      "source_sha256": "2455839b8360701f440824af3af2417ed21f10283d649d6929b66932260428c7"
+    },
+    {
+      "source": "Bagel/modeling/siglip/modeling_siglip.py",
+      "destination": "Bagel/modeling/siglip/modeling_siglip.py",
+      "source_sha256": "d601ad9987922ba8b0fa59ef35654c1b8da2b300d69bc3dde5f10d1356d879fd"
+    },
+    {
+      "source": "Bagel/modeling/siglip/processing_siglip.py",
+      "destination": "Bagel/modeling/siglip/processing_siglip.py",
+      "source_sha256": "c70d6be66a05b42d7dbf568a9fd309d7c90fbe02d56db32daa83af2882d696b4"
+    },
+    {
+      "source": "Bagel/modeling/siglip/tokenization_siglip.py",
+      "destination": "Bagel/modeling/siglip/tokenization_siglip.py",
+      "source_sha256": "04631ab91c49b47d3d9be8032ca4488f9280ffc8fc2eb1701bc2297b535536e0"
+    },
+    {
+      "source": "Bagel/train/__init__.py",
+      "destination": "Bagel/train/__init__.py",
+      "source_sha256": "15397311214f7a0755342060a6722a15cbed23bc5a94948bbd2ba42d36b92f9e"
+    },
+    {
+      "source": "Bagel/train/fsdp_utils.py",
+      "destination": "Bagel/train/fsdp_utils.py",
+      "source_sha256": "d12667ab65428adecb0be193cc175aa13f5877e90fc296df03682312301f156f"
+    },
+    {
+      "source": "Bagel/train/pretrain_unified_navit.py",
+      "destination": "Bagel/train/pretrain_unified_navit.py",
+      "source_sha256": "1f7517058417e8b3e8f525d11802aafc77167efe5378d82760380b3af67892f7",
+      "release_sha256": "9eb3ad69740d50ff17d3ba19b5b3d6bc0ad53567b8182caeb851ea7b8a7d6c7d",
+      "release_patch_sources": [
+        {
+          "source": "repro/reorder_dropout_aligned_run_20260924/reports/trainer.diff",
+          "sha256": "bfd8c124a747e967b3c410f1d9080c981302a0ee453f0e5efab8f09676297dc6"
+        }
+      ]
+    },
+    {
+      "source": "Bagel/train/train_utils.py",
+      "destination": "Bagel/train/train_utils.py",
+      "source_sha256": "565cc07cae1b23bdba7079458a1c86f36587179837e1ee88f4591a6042581580"
+    },
+    {
+      "source": "Bagel/data/interleave_datasets/interleave_t2i_dataset.py",
+      "destination": "Bagel/data/interleaved_base.py",
+      "source_sha256": "6e24e21b13308c62e2feac8d55778ec1d60d44bd6c7290f2ea2022eb862c7492",
+      "extracted_symbols": [
+        "InterleavedBaseIterableDataset._init_data",
+        "InterleavedBaseIterableDataset._add_text",
+        "InterleavedBaseIterableDataset._add_image"
+      ]
+    }
+  ],
+  "release_authored_files": [
+    {
+      "destination": "Bagel/train/freeze_policy.py",
+      "release_sha256": "59934b6c1a78476a80a08e6b3ac2dfdbaad740d79947c6e51387fb3aa870fb6a",
+      "purpose": "Frozen I2I generation-only parameter selection and actual trainable tensor receipt."
+    }
+  ],
+  "release_changes": [
+    "Portable manifest loading replaces the machine-specific dataset registry.",
+    "Preserve original packing and loss behavior; omit unused video and cluster-path helpers.",
+    "Save step-zero checkpoints and record actual sample visits, optimizer updates and unapplied microbatches.",
+    "R3 curriculum changes conditioning dropout without resetting its optimizer or scheduler.",
+    "Frozen I2I updates generation-specific parameters, retains gradient flow through fixed operations, and records trainable tensors before FSDP wrapping."
+  ]
+}

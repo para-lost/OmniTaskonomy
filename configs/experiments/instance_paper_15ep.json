@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "instance_paper_15ep",
+  "paper_commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+  "description": "Instance alignment: 15-epoch protocol described by the paper.",
+  "notes": [
+    "Both stages retrain for every data/model seed pair; no cross-seed stage1 sharing.",
+    "All four historical seed pairs are preserved. The published three-seed selection was post hoc, after inspecting results.",
+    "The observed protocol freezes the last half of LLM layers in stage1 and uses30 I2T epochs; paper prose describes standard trainable modules and15 epochs. They are separate protocols.",
+    "Evaluate I2I and I2T from the same final checkpoint on the same1000 held-out inputs for each task."
+  ],
+  "sources": [
+    {
+      "path": "gen4und/repro/reorder_correlation_seed789_20260924/README.md",
+      "sha256": "459d2d4d5bc4298bab5eb701bfee6ed37ab19fc91fb1225365a4f5bb5ba8b395"
+    },
+    {
+      "path": "gen4und/repro/reorder_correlation_seed789_20260924/reports/summary.md",
+      "sha256": "70203b65dafde3c51549321fa030ceaae29104fab75de1a4fe5e1b5ef45bd97e"
+    },
+    {
+      "path": "gen4und/repro/reorder_correlation_seed789_20260924/reports/summary_excluding_seed456.md",
+      "sha256": "ea984d7cc0fd8920f48095bcfb3d75d1d88be2b12cacd5a19ab942a20705968d"
+    }
+  ],
+  "training": {
+    "suite": "controlled",
+    "recipe": "r2",
+    "i2i_budget": 30000,
+    "i2i_pool": 30000,
+    "i2t_pool": 1000,
+    "i2t_budget": 15000,
+    "condition_dropout": 0.1
+  },
+  "evaluation": {
+    "paired_inputs_per_task": 1000,
+    "all_data_seeds": [
+      42,
+      123,
+      456,
+      789
+    ],
+    "paper_table_data_seeds": [
+      42,
+      123,
+      789
+    ],
+    "selection_reason": "Post-hoc exclusion of seed456 at the authors' request; not an established statistical outlier.",
+    "same_checkpoint_for_i2i_i2t": true,
+    "same_inputs_across_training_seeds": true
+  },
+  "jobs": [
+    {"id": "jigsaw_seed42", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "seeds": [42], "model_seeds": [4396], "i2i_seed": 42}},
+    {"id": "jigsaw_seed123", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "seeds": [123], "model_seeds": [1111], "i2i_seed": 123}},
+    {"id": "jigsaw_seed456", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "seeds": [456], "model_seeds": [2222], "i2i_seed": 456}},
+    {"id": "jigsaw_seed789", "training": {"task": "jigsaw", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2t_manifest": "jigsaw/train/i2t.jsonl", "seeds": [789], "model_seeds": [3333], "i2i_seed": 789}},
+    {"id": "zoomin_seed42", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "seeds": [42], "model_seeds": [4396], "i2i_seed": 42}},
+    {"id": "zoomin_seed123", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "seeds": [123], "model_seeds": [1111], "i2i_seed": 123}},
+    {"id": "zoomin_seed456", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "seeds": [456], "model_seeds": [2222], "i2i_seed": 456}},
+    {"id": "zoomin_seed789", "training": {"task": "zoomin", "i2i_manifest": "zoomin/train/i2i.jsonl", "i2t_manifest": "zoomin/train/i2t.jsonl", "seeds": [789], "model_seeds": [3333], "i2i_seed": 789}}
+  ]
+}

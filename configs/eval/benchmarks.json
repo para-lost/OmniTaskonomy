@@ -1,0 +1,10 @@
+{
+  "BLINK": {"class": "ImageMCQDataset", "dataset": "BLINK"},
+  "MMStar": {"class": "ImageMCQDataset", "dataset": "MMStar"},
+  "MMT-Bench_VAL": {"class": "ImageMCQDataset", "dataset": "MMT-Bench_VAL"},
+  "CV-Bench-2D": {"class": "CVBench", "dataset": "CV-Bench-2D"},
+  "CV-Bench-3D": {"class": "CVBench", "dataset": "CV-Bench-3D"},
+  "RealWorldQA": {"class": "ImageMCQDataset", "dataset": "RealWorldQA"},
+  "MMVP": {"class": "ImageMCQDataset", "dataset": "MMVP"},
+  "VStarBench": {"class": "ImageMCQDataset", "dataset": "VStarBench"}
+}

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "paper_commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+  "sources": [
+    {
+      "path": "gen4und/Bagel/data/interleave_datasets/edit_dataset.py",
+      "sha256": "3ae89b2c1bff1374d7fba3ab87c81bb101e2756200342bdf443e3d8ed932f4d0"
+    },
+    {
+      "path": "gen4und/Bagel/data/interleave_datasets/rotate_qa_dataset.py",
+      "sha256": "0cb55d8ab3e825d599e81165ff954d9ce1c34e43df68d7f49c9cee3c743879f4"
+    },
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/refine_grad_analysis_v1/manifest.py",
+      "sha256": "82f6f515b1ad8fff68baaf7b6564378f5807f9623a7f9b6aa3d8b0557d5fe7e9"
+    },
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/refine_grad_analysis_v1/extract.py",
+      "sha256": "fcc96df8898791caf8044591862ae70fab633e8eb983d19fe0aacf2518ee836a"
+    },
+    {
+      "path": "gen4und/taxonomy/data/gradviz/refine_grad_analysis_v1/manifest/manifest.json",
+      "sha256": "963e1346b409d9b5b3b2a8894c02a1d69db82e182bd78cccb587f17b3f4f5d94"
+    }
+  ],
+  "release_files": [
+    {
+      "path": "data/gradients/reference_selection.json.gz",
+      "sha256": "a0c212734beee7c9373ae82ef588d04be611738ebd777ead94ea9231fbe483d3"
+    },
+    {
+      "path": "configs/gradients/reference_sources.json",
+      "sha256": "4799794d4bfb08d7a52c8e8092456e55cb08514ffb7b9555f792968fd0467a62"
+    },
+    {
+      "path": "omnitaskonomy/gradients/reference_data.py",
+      "sha256": "6c580aa7f01099e448955439d69e6b29c7c0cfa52091e3ad8f9ebea58b9f90c8"
+    }
+  ],
+  "transformations": [
+    "Retain all3000 source identities, selected positions, paired objective record digests, explicit fivefold assignments and RotateQA external-image digests. Remove machine-specific paths and unrelated model/code provenance from compact selection; preserve original file and content digests.",
+    "Adapt six data readers into portable RGB assets and I2I/I2T manifests; preserve objective-specific prompts and per-source random prompt choices using frozen data seeds.",
+    "Reference Colorization is the circled-region/palette task. It is distinct from the transfer experiment grayscale-to-RGB source."
+  ],
+  "license": "BAGEL data adapter portions retain Apache-2.0 headers; license in Bagel/LICENSE."
+}

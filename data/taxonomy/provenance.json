@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "files": {
+    "tasks.json": "04898db91baa2ae2f1bdff5ca23dfb7921d846da843f7bea7282ad65307cb6a4",
+    "retained_questions.jsonl": "458ada9484690927a9fec9c69afa206d7dc75440c973768748572b609e00c8d5",
+    "excluded_questions.jsonl": "30ee529a8518f5d443f4768c85cc2a1f1e6cec74f7146890abab03c723a70ba0"
+  },
+  "counts": {
+    "i2i": 19,
+    "i2t": 25,
+    "retained": 9444,
+    "excluded": 978
+  },
+  "paper": {
+    "repository": "overleaf/my-paper",
+    "commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+    "path": "iclr2026/sections/appendix/4_taskonomy.tex",
+    "sha256": "c12b66f5799aca10767b784b733ab29c5d4917d77a5c9d1f2f8b2b88de9b65e1"
+  },
+  "sources": [
+    {
+      "path": "gen4und/taxonomy/configs/unitaskonomy_v13.yaml",
+      "sha256": "2ac7976f0d4b86ebeded83835881788fcd3e430f879232e9b58379830f77197d",
+      "role": "schema"
+    },
+    {
+      "path": "gen4und/taxonomy/data/unitaskonomy/v13/release/unitaskonomy_v13_tree.json",
+      "sha256": "6db4de9a247105f3aaaaa71d1d4a657a56b18fb4f792006af6a572b13d05ba96",
+      "role": "tree"
+    },
+    {
+      "path": "gen4und/taxonomy/data/unitaskonomy/v13/release/data_to_node.json",
+      "sha256": "654792ff5f4aba8e5cf024fd3f65106f0c459ce55472862a26b5f29eb259c5cd",
+      "role": "retained"
+    },
+    {
+      "path": "gen4und/taxonomy/data/unitaskonomy/v13/release/excluded_samples.json",
+      "sha256": "5b00f0b4e6018d2f778ca0450c650ac21508a887d8a7e14371a7f33276f2df32",
+      "role": "excluded"
+    },
+    {
+      "path": "gen4und/overleaf/my-paper/analysis/transfer_v13/data/i2i_inventory.json",
+      "sha256": "5ff1aa1e8bb3963fc664583ecf68e85826ee2d3451019fbd817a830d4a5054a5",
+      "role": "inventory"
+    },
+    {
+      "path": "gen4und/VLMEvalKit/outputs/unitaskonomy_v15_eval/heatmap_data.json",
+      "sha256": "2ebfa53a77751b8c1a0d5f7ab20536dc6029b0f8afaf9a31eee5729c3f01ec17",
+      "role": "v15_inventory"
+    },
+    {
+      "path": "gen4und/taxonomy/data/unitaskonomy/v11/consensus_report.json",
+      "sha256": "6dad19e280a0d5f20185b6b3ac250f2ed3dc43f565b236d9a177e57265c15919",
+      "role": "consensus"
+    }
+  ],
+  "population": {
+    "source_questions": 10422,
+    "eligible_for_final_vote": 9473,
+    "retained_by_family": {
+      "REC": 3475,
+      "RORG": 2931,
+      "RCN": 3038
+    },
+    "retained_by_benchmark": {
+      "BLINK": 1758,
+      "CV-Bench-2D": 1434,
+      "CV-Bench-3D": 1200,
+      "MMStar": 986,
+      "MMT-Bench_VAL": 2840,
+      "MMVP": 290,
+      "RealWorldQA": 745,
+      "VStarBench": 191
+    },
+    "excluded_by_benchmark": {
+      "BLINK": 143,
+      "CV-Bench-2D": 4,
+      "MMStar": 514,
+      "MMT-Bench_VAL": 287,
+      "MMVP": 10,
+      "RealWorldQA": 20
+    },
+    "agreement_patterns": {
+      "AAA": 8811,
+      "AAB": 633
+    },
+    "exclusion_types": {
+      "inherited_v10": 949,
+      "v11_no_leaf_majority": 29
+    }
+  },
+  "transformations": [
+    "Preserve all 25 v13 I2T IDs, definitions, families and 9,444 retained UID-to-leaf assignments; preserve all 978 excluded UIDs and reasons.",
+    "Extend the historical 15 I2I tasks with Object editing, Attribute editing, Inpainting and Localization using the paper inventory; retain independent typed I2I and I2T identities.",
+    "Keep i2i:object_replacement as the stable Object editing ID; update its definition to cover both addition and replacement. Define Colorization as grayscale-to-RGB per the paper.",
+    "Bind I2I source_id to the v15 model key, without copying checkpoint paths, model results or historical checkpoint bindings.",
+    "Sort question records by UID. Preserve nonnumeric benchmark indexes as strings, including BLINK val_Art_Style_1-style IDs.",
+    "Retain concise schema boundaries, vote agreement counts and exclusion reasons; omit image data, model response payloads, human reviews and machine-local paths."
+  ]
+}

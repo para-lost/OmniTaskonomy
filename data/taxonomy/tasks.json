@@ -1,0 +1,740 @@
+{
+  "schema_version": 1,
+  "families": [
+    {
+      "id": "REC",
+      "name": "Recognition",
+      "definition": "Attaching semantic labels and identities to what is in the image: category, instance, part, attribute, material, state, action, text and symbol. The question it answers is *what is this*."
+    },
+    {
+      "id": "RCN",
+      "name": "Reconstruction",
+      "definition": "Recovering geometric and photometric scene/image properties: projected 2D spatial arrangement, depth, distance, metric size, orientation, curvature, 3D pose and shape, illumination, and geometry hidden by an occluder. The question it answers is *what is the geometric scene or its projection like*."
+    },
+    {
+      "id": "RORG",
+      "name": "Reorganization",
+      "definition": "Organising visual elements into coherent structures without necessarily naming them: grouping and segmentation, correspondence, ordering, counting, localization, and connection/topology. The question it answers is *what goes with what and how is it organised*."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "i2i:object_replacement",
+      "name": "Object editing",
+      "modality": "i2i",
+      "family": "REC",
+      "definition": "Add objects of a requested category or replace existing objects with that category in the input image.",
+      "source_id": "category"
+    },
+    {
+      "id": "i2i:attribute_editing",
+      "name": "Attribute editing",
+      "modality": "i2i",
+      "family": "REC",
+      "definition": "Change a specified color, material, or other appearance attribute in the input image.",
+      "source_id": "appearance"
+    },
+    {
+      "id": "i2t:CATEGORY_INSTANCE",
+      "name": "Category recognition",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Recognize the semantic category, name, stable identity attribute, or known identity of an object, person, place, or scene.",
+      "include": [
+        "which object, species, vehicle, place, or scene category is shown",
+        "identifying a named landmark, person, brand, logo, or individual instance",
+        "verifying that a named category or known instance is present",
+        "coarse age group, gender, race, or another stable semantic attribute",
+        "semantic query-candidate retrieval by shared class or concept, without same-instance mapping"
+      ],
+      "exclude": [
+        "naming a component of a larger object -> i2t:PART_RECOGNITION",
+        "transcribing a written name -> i2t:OCR_TEXT",
+        "mapping the same entity across indexed images/frames -> i2t:CORRESPONDENCE_TRACKING",
+        "inferring an irreducible purpose or social situation -> i2t:HOLISTIC_SCENE_UNDERSTANDING",
+        "named colour, material, texture, typeface, or visual style -> i2t:COLOR_MATERIAL",
+        "a conventional instruction or state conveyed by an icon, sign, or legend -> i2t:SYMBOL_LEGEND",
+        "country or territory identity encoded by a national flag -> i2t:SYMBOL_LEGEND",
+        "an ordinary transient or operational state -> i2t:STATE_EMOTION",
+        "a visible action, sport, activity, or gesture being performed -> i2t:ACTION_RECOGNITION",
+        "projected 2D shape or outline class -> i2t:COLOR_MATERIAL",
+        "generic matching by overall visual resemblance -> i2t:VISUAL_SIMILARITY"
+      ],
+      "decision_test": "Is the answer a semantic category or identity rather than a visual match, temporary state, activity, or grounded region map?",
+      "routing_axis": "a semantic class, stable class attribute, proper name, or known-instance identity"
+    },
+    {
+      "id": "i2t:PART_RECOGNITION",
+      "name": "Part recognition",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Identify or name a sub-part / component of an object (a handle, a wing, an engine bay).",
+      "include": [
+        "which part of the object is indicated",
+        "whether a named part is present or intact"
+      ],
+      "exclude": [
+        "counting parts -> i2t:OBJECT_COUNTING",
+        "pointing at where the part is -> i2t:REFERENTIAL_LOCALIZATION"
+      ],
+      "decision_test": "Is the required name specifically a component of a larger object?",
+      "routing_axis": "the semantic name/identity of a component within a larger object"
+    },
+    {
+      "id": "i2t:COLOR_MATERIAL",
+      "name": "Appearance understanding",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Understand visible appearance in the image plane, including named non-geometric properties and projected 2D shape, silhouette, outline, contour morphology, or edge structure.",
+      "include": [
+        "the colour, material, texture, finish, pattern, typeface, or visual style that is shown",
+        "a comparison along a named appearance property such as darker, rougher, sharper, or blurrier",
+        "projected 2D shape, silhouette, perimeter, outline class, indentation, or contour morphology",
+        "an image-plane intensity, texture, outline, silhouette, or edge field"
+      ],
+      "exclude": [
+        "overall image or object resemblance without a named property or explicit outline request -> i2t:VISUAL_SIMILARITY",
+        "an explicit localized mapping of a point, patch, part, or entity across indexed images or frames -> i2t:CORRESPONDENCE_TRACKING",
+        "illumination, shadow, reflectance separation, or light direction -> i2t:LIGHTING_SHADING",
+        "intrinsic observer-independent 3D solid form or physical surface bending -> i2t:THREE_D_SHAPE_REASONING",
+        "a causal boundary where one physical surface occludes another -> i2t:OCCLUSION_BOUNDARIES",
+        "normative abnormality, defect, forgery, or manipulation -> i2t:ANOMALY",
+        "semantic object or scene category, or known identity -> i2t:CATEGORY_INSTANCE",
+        "a target point, box, mask, crop, polygon, or foreground support -> i2t:REFERENTIAL_LOCALIZATION",
+        "real-world size, distance, or other metric geometry -> i2t:METRIC_3D_RELATION"
+      ],
+      "decision_test": "Is the requested variable a named visible property or projected 2D shape/contour/edge representation, rather than holistic resemblance, 3D form, or localized cross-image identity mapping?",
+      "routing_axis": "a named visible appearance property or projected 2D shape, contour, or edge field"
+    },
+    {
+      "id": "i2t:VISUAL_SIMILARITY",
+      "name": "Visual similarity",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Judge holistic visual resemblance, difference, or match among complete images, regions, or objects when no localized indexed correspondence and no specific appearance property is requested.",
+      "include": [
+        "choosing which complete image or candidate looks most like a reference overall",
+        "ranking or comparing several images by overall visual similarity",
+        "generic resemblance, difference, or appearance-based retrieval without a named property",
+        "overall visual change when no explicit point, patch, part, or entity must be mapped"
+      ],
+      "exclude": [
+        "a named property or projected shape, silhouette, contour, or edge representation -> i2t:COLOR_MATERIAL",
+        "an explicit localized mapping of a marked point, patch, part, or entity across indexed images or frames -> i2t:CORRESPONDENCE_TRACKING",
+        "semantic matching by object or scene category -> i2t:CATEGORY_INSTANCE",
+        "abnormality, defect, forgery, or manipulation relative to a standard -> i2t:ANOMALY",
+        "metric size, distance, or physical geometry -> i2t:METRIC_3D_RELATION"
+      ],
+      "decision_test": "Is the requested relation an overall image/object resemblance or ranking, rather than an explicit localized cross-image correspondence?",
+      "routing_axis": "holistic image/object resemblance without a localized indexed mapping"
+    },
+    {
+      "id": "i2t:STATE_EMOTION",
+      "name": "State recognition",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Recognize an ordinary temporary, operational, environmental, or emotional state without judging it against a norm.",
+      "include": [
+        "emotion, facial expression, mood, weather, time of day, or on/off state",
+        "open/closed, wet/dry, cooked/raw, awake/asleep, or another ordinary state contrast",
+        "active traffic-signal or device status even when that status is encoded by colour",
+        "a present or predicted non-normative state value"
+      ],
+      "exclude": [
+        "diagnosis, severity, defect, compliance, or deviation from normal -> i2t:ANOMALY",
+        "naming an action or interaction -> i2t:ACTION_RECOGNITION",
+        "inferring a multi-entity social situation, affordance, or purpose -> i2t:HOLISTIC_SCENE_UNDERSTANDING",
+        "a stable semantic or demographic class such as age group, gender, or race -> i2t:CATEGORY_INSTANCE",
+        "literal hue, texture, typeface, or style independent of function -> i2t:COLOR_MATERIAL"
+      ],
+      "decision_test": "Is the answer a temporary state, including emotion, rather than a stable category, activity, or anomaly?",
+      "routing_axis": "an ordinary temporary, operational, environmental, or emotional state"
+    },
+    {
+      "id": "i2t:ACTION_RECOGNITION",
+      "name": "Activity understanding",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Understand what activity or event is happening, how it develops, or which semantic stage of an activity or process is shown.",
+      "include": [
+        "what a person, animal, or object is doing",
+        "which interaction or visible event is occurring",
+        "how an ongoing visible event develops or what happens next",
+        "the semantic order or stage of an activity or process"
+      ],
+      "exclude": [
+        "whole-situation relationship, purpose, intent, affordance, safety, or narrative meaning -> i2t:HOLISTIC_SCENE_UNDERSTANDING",
+        "recovering an externally shuffled visual permutation from continuity -> i2t:GLOBAL_ORDERING",
+        "geometric heading, gaze, body configuration, or surface orientation without an action label -> i2t:SURFACE_ORIENTATION",
+        "performance quality scored against a normative reference -> i2t:ANOMALY",
+        "a stable profession, role, or semantic entity class -> i2t:CATEGORY_INSTANCE",
+        "an ordinary state or emotion without an action label -> i2t:STATE_EMOTION"
+      ],
+      "decision_test": "Is the answer what activity or event is happening, how it develops, or which activity/process stage is shown, rather than what the whole situation means?",
+      "routing_axis": "the visible activity/event, its development, or its semantic process stage"
+    },
+    {
+      "id": "i2t:ANOMALY",
+      "name": "Anomaly detection",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Detect whether an observation departs from what is normal, correct, authentic, healthy, intact, or properly performed.",
+      "include": [
+        "whether a component, behaviour, condition, or scene is abnormal or defective",
+        "whether an image is manipulated, forged, AI-generated, or otherwise inauthentic",
+        "grading how well an action or performance meets an explicit or learned standard",
+        "quality, severity, or deviation scores whose meaning is normative rather than descriptive"
+      ],
+      "exclude": [
+        "assigning an ordinary non-normative state value -> i2t:STATE_EMOTION",
+        "a generic visual difference without a normal/abnormal judgement -> i2t:VISUAL_SIMILARITY",
+        "recognizing the visible action/event or its semantic stage without judging quality -> i2t:ACTION_RECOGNITION",
+        "prospective safety or affordance requiring whole-scene context -> i2t:HOLISTIC_SCENE_UNDERSTANDING",
+        "counting anomalous instances after they have been identified -> i2t:OBJECT_COUNTING",
+        "predicting how a visible event develops or what happens next -> i2t:ACTION_RECOGNITION"
+      ],
+      "decision_test": "Must the observation be judged against an expected norm or reference standard?",
+      "routing_axis": "departure from a normal, correct, authentic, healthy, or quality standard"
+    },
+    {
+      "id": "i2t:HOLISTIC_SCENE_UNDERSTANDING",
+      "name": "Situation understanding",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Understand what a whole situation means by combining multiple entities and contextual cues, including relationships, purpose, intent, affordance, safety, and narrative meaning.",
+      "include": [
+        "the overall purpose or intended use of a scene or setting",
+        "a latent social or ecological relationship such as kinship, competition, predation, or symbiosis",
+        "an affordance or safety judgement requiring the complete scene context",
+        "meme, caption, poem, or narrative alignment when the answer is the whole situation's meaning rather than an activity or event sequence"
+      ],
+      "exclude": [
+        "a visible action or event, how it develops, or an activity/process stage -> i2t:ACTION_RECOGNITION",
+        "one object or scene category, main subject, or known instance -> i2t:CATEGORY_INSTANCE",
+        "one ordinary state, mood, or emotion -> i2t:STATE_EMOTION",
+        "one direct spatial or topological relation -> i2t:QUALITATIVE_SPATIAL_RELATIONS",
+        "one conventional sign or icon meaning -> i2t:SYMBOL_LEGEND",
+        "a rule or state transition decoded from a structured display -> OUT_OF_SCOPE",
+        "a normative quality or anomaly judgement about an observed performance -> i2t:ANOMALY",
+        "dense per-pixel semantic class assignment -> i2t:SEMANTIC_SCENE_PARSING"
+      ],
+      "decision_test": "Does the answer express what the whole situation means—such as a relationship, purpose, intent, affordance, safety judgement, or narrative—rather than what activity or event is happening or how it develops?",
+      "routing_axis": "the relationship, purpose, intent, affordance, safety, or narrative meaning of the whole situation"
+    },
+    {
+      "id": "i2t:OCR_TEXT",
+      "name": "OCR and text recognition",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Reading written text, numbers, handwriting, or mathematical expressions rendered in the image, and verifying that a given string is present.",
+      "include": [
+        "what does the sign / label / handwriting say",
+        "transcribing an equation or a number printed in the image",
+        "whether the stated text appears in the image",
+        "directly transcribing text or numbers inside a chart, table, diagram, or interface when no structural inference is needed"
+      ],
+      "exclude": [
+        "reasoning over chart/table structure, encoded quantities, or abstract rules -> OUT_OF_SCOPE",
+        "a non-text pictogram -> i2t:SYMBOL_LEGEND",
+        "a semantic class, genre, or identity inferred after reading text -> i2t:CATEGORY_INSTANCE",
+        "counting visible text instances rather than transcribing them -> i2t:OBJECT_COUNTING"
+      ],
+      "decision_test": "Must written characters, numbers, handwriting, or an expression be transcribed or verified?",
+      "routing_axis": "a literal written character sequence or expression"
+    },
+    {
+      "id": "i2t:SYMBOL_LEGEND",
+      "name": "Symbol recognition",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Recognize the conventional meaning of a non-text symbol, icon, pictogram, traffic sign, flag, map key, or legend item.",
+      "include": [
+        "what an icon, traffic sign, road marking, or pictogram means",
+        "which country or territory a national flag conventionally represents",
+        "which series a legend colour refers to",
+        "the conventional instruction encoded by one sign, arrow, or symbolic marking"
+      ],
+      "exclude": [
+        "locating the symbol -> i2t:REFERENTIAL_LOCALIZATION",
+        "brand or known-instance identity conveyed by a logo -> i2t:CATEGORY_INSTANCE",
+        "a traffic rule or affordance inferred from several scene cues -> i2t:HOLISTIC_SCENE_UNDERSTANDING",
+        "the geometric pointing orientation of one arrow without interpreting its instruction -> i2t:SURFACE_ORIENTATION",
+        "multi-element chart, diagram, interface, or abstract-pattern reasoning -> OUT_OF_SCOPE"
+      ],
+      "decision_test": "Must one non-text symbol or legend item be recognized or decoded?",
+      "routing_axis": "the conventional meaning of one non-text symbol"
+    },
+    {
+      "id": "i2t:SEMANTIC_SCENE_PARSING",
+      "name": "Region semantic recognition",
+      "modality": "i2t",
+      "family": "REC",
+      "definition": "Connect semantic concepts to image regions by assigning class labels to pixels or regions across the image.",
+      "include": [
+        "semantic segmentation of the full image",
+        "the semantic class at a specified pixel or region",
+        "choosing or interpreting a category-labelled mask or parsing map"
+      ],
+      "exclude": [
+        "localizing one referred target without assigning semantic classes across the image -> i2t:REFERENTIAL_LOCALIZATION",
+        "class-free 2D grouping or matting -> i2t:REFERENTIAL_LOCALIZATION",
+        "geometry-driven 2.5D grouping -> OUT_OF_SCOPE",
+        "the category or identity of one object or scene without region grounding -> i2t:CATEGORY_INSTANCE",
+        "scene purpose, intent, narrative, or social situation -> i2t:HOLISTIC_SCENE_UNDERSTANDING"
+      ],
+      "decision_test": "Must semantic labels be grounded to pixels or regions across an image, rather than merely naming one entity or locating one referent?",
+      "routing_axis": "semantic class labels grounded to pixels or image regions"
+    },
+    {
+      "id": "i2i:colorization",
+      "name": "Colorization",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Recover the color image corresponding to a grayscale input.",
+      "source_id": "colorization"
+    },
+    {
+      "id": "i2i:z_depth",
+      "name": "Z-depth",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Predict camera-axis z-buffer depth for each visible image location.",
+      "source_id": "depth_zbuffer"
+    },
+    {
+      "id": "i2i:euclidean_depth",
+      "name": "Euclidean depth",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Predict Euclidean distance from the camera to the visible surface at each image location.",
+      "source_id": "depth_euclidean"
+    },
+    {
+      "id": "i2i:surface_normals",
+      "name": "Surface normals",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Predict the local three-dimensional surface-normal direction at each image location.",
+      "source_id": "normal"
+    },
+    {
+      "id": "i2i:principal_curvature",
+      "name": "Principal curvature",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Predict local principal surface curvature from the input image.",
+      "source_id": "principal_curvature"
+    },
+    {
+      "id": "i2i:occlusion_edges",
+      "name": "Occlusion edges",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Predict image boundaries caused by occlusion and visible depth discontinuities.",
+      "source_id": "edge_occlusion"
+    },
+    {
+      "id": "i2i:keypoints_3d",
+      "name": "3D keypoints",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Predict a predefined representation of three-dimensional keypoints or landmarks.",
+      "source_id": "keypoints3d"
+    },
+    {
+      "id": "i2i:reshading",
+      "name": "Reshading",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Recover the image's per-pixel shading representation from its visual content.",
+      "source_id": "reshading"
+    },
+    {
+      "id": "i2i:inpainting",
+      "name": "Inpainting",
+      "modality": "i2i",
+      "family": "RCN",
+      "definition": "Complete rectangular masked regions of an input image.",
+      "source_id": "inpainting"
+    },
+    {
+      "id": "i2t:LIGHTING_SHADING",
+      "name": "Lighting understanding",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Illumination, shading, shadows, highlights, reflectance vs. illumination (intrinsic-image) reasoning, and light-source direction.",
+      "include": [
+        "where the light comes from; which surface is in shadow",
+        "separating an object's true colour/albedo from the light falling on it",
+        "whether a shadow / reflection / highlight is physically consistent"
+      ],
+      "exclude": [
+        "the object's intrinsic colour with no illumination question -> i2t:COLOR_MATERIAL",
+        "surface normal, slant, or plane orientation rather than illumination -> i2t:SURFACE_ORIENTATION"
+      ],
+      "decision_test": "Is illumination, shading, shadow, highlight, reflectance separation, or light direction the target?",
+      "routing_axis": "an illumination, shading, shadow, reflectance, or light-direction property"
+    },
+    {
+      "id": "i2t:DEPTH_DISTANCE",
+      "name": "Depth understanding",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Recover camera-relative depth or depth order: z/radial distance from the observer, including pairwise front/behind and nearer/farther order along the viewing direction when no physical metric is requested.",
+      "include": [
+        "dense or sparse camera-relative depth",
+        "which scene point or object is nearer to or farther from the camera",
+        "whether one visible entity is in front of or behind another in camera depth",
+        "ordinal or categorical depth layers without a real-world distance scale"
+      ],
+      "exclude": [
+        "real-world inter-object distance, physical size, height, length, or scale -> i2t:METRIC_3D_RELATION",
+        "a directly visible image-plane left/right, above/below, centre, side, corner, or quadrant relation -> i2t:RELATIVE_3D_RELATION",
+        "actual visibility blocking, crop indeterminacy, or a causal occlusion boundary -> i2t:OCCLUSION_BOUNDARIES",
+        "an entity's facing, heading, articulated configuration, or a surface orientation -> i2t:SURFACE_ORIENTATION",
+        "touching, containment, attachment, support, or another topological relation -> i2t:QUALITATIVE_SPATIAL_RELATIONS"
+      ],
+      "decision_test": "Is the requested variable ordered distance along the camera/viewing axis, rather than image-plane x-y position or real-world metric distance?",
+      "routing_axis": "camera-relative z/radial depth or front/behind order"
+    },
+    {
+      "id": "i2t:METRIC_3D_RELATION",
+      "name": "Metric 3D relation",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Recover a real-world metric or scale-bearing relation among scene entities: inter-object distance, physical proximity, size, height, length, volume, or quantitative 3D layout.",
+      "include": [
+        "how far one physical entity is from another",
+        "which entities are physically closer together or farther apart, even when the answer is a qualitative distance bin",
+        "which object is physically larger, taller, longer, nearer to another, or farther from another",
+        "metric scene dimensions or scale-consistent layout"
+      ],
+      "exclude": [
+        "front/behind or nearer/farther order relative to the observing camera -> i2t:DEPTH_DISTANCE",
+        "a directly visible projected left/right, above/below, frame position, or image-plane proximity relation -> i2t:RELATIVE_3D_RELATION",
+        "a count after applying a metric-distance filter -> i2t:OBJECT_COUNTING",
+        "a named non-geometric appearance property -> i2t:COLOR_MATERIAL",
+        "intrinsic 3D form independent of metric size or scale -> i2t:THREE_D_SHAPE_REASONING",
+        "generic visual resemblance or matching -> i2t:VISUAL_SIMILARITY",
+        "heading, facing, door swing, relative axis alignment, or surface orientation -> i2t:SURFACE_ORIENTATION",
+        "touching, attachment, containment, support, overlap, or path connectivity -> i2t:QUALITATIVE_SPATIAL_RELATIONS"
+      ],
+      "decision_test": "Does the answer describe physical distance or size in the scene—numerically or categorically—rather than projected image position or camera-axis depth order?",
+      "routing_axis": "a real-world physical distance, size, or scale relation among entities"
+    },
+    {
+      "id": "i2t:OCCLUSION_BOUNDARIES",
+      "name": "Occlusion understanding",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Determine whether content is visible, occluded, cropped, or out of frame; recover the occluder/occluded order and causal boundary where one surface blocks another.",
+      "include": [
+        "whether an object or part is fully visible, partly hidden, cropped, or indeterminate",
+        "which surface physically occludes another",
+        "where an occluding contour or causal depth discontinuity runs"
+      ],
+      "exclude": [
+        "front/back camera-depth order without actual visibility blocking -> i2t:DEPTH_DISTANCE",
+        "reconstructing pixels inside a masked or missing region -> OUT_OF_SCOPE",
+        "an untyped 2D edge or projected outline without an occlusion cause -> i2t:COLOR_MATERIAL"
+      ],
+      "decision_test": "Does the item ask about visibility loss from blocking or image-boundary truncation, or about the causal occlusion boundary, rather than plain depth, inpainting, or 2D shape?",
+      "routing_axis": "visibility status, occluder/occluded order, or a causal depth boundary"
+    },
+    {
+      "id": "i2t:THREE_D_SHAPE_REASONING",
+      "name": "3D shape reasoning",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Reason about intrinsic 3D form that is independent of the observer, including solid identity, congruence, cross-section, folding and unfolding, or local surface bending such as curvature, ridges, and valleys.",
+      "include": [
+        "which solid or net matches an object",
+        "whether two solids are congruent under rotation",
+        "the cross-section produced by slicing or folding a solid",
+        "whether a surface is convex, concave, flat, raised, or indented",
+        "where a local ridge, valley, crease, or curved region runs"
+      ],
+      "exclude": [
+        "a requested camera projection, top/side view, or view transform -> i2t:MULTIVIEW_VIEWPOINT_REASONING",
+        "a semantic object name -> i2t:CATEGORY_INSTANCE",
+        "real-world size, distance, length, volume, or scale -> i2t:METRIC_3D_RELATION",
+        "a projected 2D outline, perimeter indentation, or edge map -> i2t:COLOR_MATERIAL",
+        "surface slant, normal, heading, facing, or articulated pose -> i2t:SURFACE_ORIENTATION"
+      ],
+      "decision_test": "Is the requested variable an observer-independent global 3D form or local way a physical surface bends, rather than a projection, scale, or orientation?",
+      "routing_axis": "observer-independent global or local 3D form, including surface bending"
+    },
+    {
+      "id": "i2t:SURFACE_ORIENTATION",
+      "name": "Orientation understanding",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Understand the orientation or geometric configuration of a focal entity or visible surface, including heading, facing, gaze, articulated pose, door opening or swing direction, object rotation, relative axis alignment, surface normal, slant, tilt, or slope.",
+      "include": [
+        "which way a person, animal, vehicle, object, arrow, door, or movable part faces, points, opens, or swings",
+        "gaze, head direction, articulated body or limb configuration, and rigid object rotation",
+        "upright/inverted state, heading, or orientation relative to camera or world axes",
+        "whether physical entities or axes face, point, travel, align, or oppose one another",
+        "surface normal, slant, tilt, road slope, or ground-plane orientation"
+      ],
+      "exclude": [
+        "a directly visible left/right, above/below, frame position, quadrant, or other image-plane arrangement -> i2t:RELATIVE_3D_RELATION",
+        "the semantic action or meaning expressed by a configuration -> i2t:ACTION_RECOGNITION",
+        "camera pose or a transform between viewpoints -> i2t:MULTIVIEW_VIEWPOINT_REASONING",
+        "touching, containment, support, overlap, or path/topological connectivity -> i2t:QUALITATIVE_SPATIAL_RELATIONS",
+        "the conventional instruction conveyed by an arrow or sign -> i2t:SYMBOL_LEGEND",
+        "illumination, shadow, or light direction rather than surface geometry -> i2t:LIGHTING_SHADING",
+        "explicit 2D keypoint coordinates or maps -> i2t:LANDMARKS_JUNCTIONS_2D",
+        "explicit 3D landmark coordinates or maps -> OUT_OF_SCOPE",
+        "intrinsic observer-independent global or local 3D form -> i2t:THREE_D_SHAPE_REASONING",
+        "a count or proportion of visible elements having an orientation -> i2t:OBJECT_COUNTING"
+      ],
+      "decision_test": "Is the requested variable how an entity, articulated part, physical axis, or surface is oriented or configured, rather than where it lies in projected image x-y coordinates?",
+      "routing_axis": "the orientation or geometric configuration of an entity, articulated part, axis, or surface"
+    },
+    {
+      "id": "i2t:RELATIVE_3D_RELATION",
+      "name": "2D spatial relation",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Understand a directly visible, qualitative spatial relationship in the projected image plane, including position relative to the frame or to another visible entity, without inferring physical depth, metric geometry, or 3D orientation.",
+      "include": [
+        "left/right, above/below, top/bottom, centre, side, or corner position in the image",
+        "one visible entity's projected left/right or above/below position relative to another",
+        "row, column, quadrant, image-plane order, or projected alignment",
+        "which visible item is closest to an image edge, corner, or centre",
+        "qualitative projected proximity or separation when no physical depth or real-world distance is required"
+      ],
+      "exclude": [
+        "touching, attachment, containment, support, overlap, intersection, shared carrier, path, or graph connectivity -> i2t:QUALITATIVE_SPATIAL_RELATIONS",
+        "front/behind, nearer/farther from the camera, or another camera-axis depth order -> i2t:DEPTH_DISTANCE",
+        "real-world distance, size, height, length, volume, or scale, including categorical physical-distance comparisons -> i2t:METRIC_3D_RELATION",
+        "heading, facing, gaze, articulated configuration, door swing/opening direction, axis alignment, or surface orientation -> i2t:SURFACE_ORIENTATION",
+        "visibility loss because one surface blocks another -> i2t:OCCLUSION_BOUNDARIES",
+        "intrinsic observer-independent 3D form or local surface bending -> i2t:THREE_D_SHAPE_REASONING",
+        "camera motion, view transformation, requested projection, or novel-view integration -> i2t:MULTIVIEW_VIEWPOINT_REASONING",
+        "a count or comparison of counts after applying a spatial predicate -> i2t:OBJECT_COUNTING",
+        "an ambiguous, broken, non-visual, abstract, or primarily semantic item with no clear supported capability -> OUT_OF_SCOPE"
+      ],
+      "decision_test": "Can the answer be read as a qualitative relation in image x-y coordinates, without recovering depth, physical scale, or how an entity or surface is oriented in 3D?",
+      "routing_axis": "a directly visible qualitative x-y position or arrangement in the image plane"
+    },
+    {
+      "id": "i2t:MULTIVIEW_VIEWPOINT_REASONING",
+      "name": "Multi-view reasoning",
+      "modality": "i2t",
+      "family": "RCN",
+      "definition": "Transform or integrate camera/observer coordinate frames: camera motion/pose, requested projection, novel view, multi-view layout, or egocentric navigation.",
+      "include": [
+        "how the camera moved between indexed views",
+        "which top, side, or novel projection a scene/solid produces",
+        "integrating multiple views or choosing an egocentric turn"
+      ],
+      "exclude": [
+        "intrinsic solid identity, net, congruence, or cross-section -> i2t:THREE_D_SHAPE_REASONING",
+        "an entity's or surface's pose/orientation in the observed frame -> i2t:SURFACE_ORIENTATION",
+        "only matching a point/entity across views -> i2t:CORRESPONDENCE_TRACKING",
+        "metric relation without a requested view transform -> i2t:METRIC_3D_RELATION"
+      ],
+      "decision_test": "Must the answer explicitly transform or integrate observer/camera frames or produce a requested projection?",
+      "routing_axis": "a camera/observer-frame transform or integration"
+    },
+    {
+      "id": "i2i:semantic_segmentation",
+      "name": "Semantic segmentation",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Predict a fixed semantic category label for every image pixel or region.",
+      "source_id": "semseg"
+    },
+    {
+      "id": "i2i:edges_2d",
+      "name": "2D edges",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Predict local image-plane edges induced by visible texture and intensity structure.",
+      "source_id": "edge_texture"
+    },
+    {
+      "id": "i2i:keypoints_2d",
+      "name": "2D keypoints",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Predict a predefined representation of two-dimensional image keypoints.",
+      "source_id": "keypoints2d"
+    },
+    {
+      "id": "i2i:segmentation_2d",
+      "name": "2D segmentation",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Partition an image into class-free coherent regions using two-dimensional appearance cues.",
+      "source_id": "segment_unsup2d"
+    },
+    {
+      "id": "i2i:segmentation_25d",
+      "name": "2.5D segmentation",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Partition visible surfaces into class-free regions using image and 2.5D geometric cues.",
+      "source_id": "segment_unsup25d"
+    },
+    {
+      "id": "i2i:object_pointing",
+      "name": "Object pointing",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Given an image and a category query, overlay one point on every matching visible instance.",
+      "source_id": "counting"
+    },
+    {
+      "id": "i2i:jigsaw",
+      "name": "Jigsaw",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Recover the correct spatial organization of shuffled image regions or patches.",
+      "source_id": "jigsaw"
+    },
+    {
+      "id": "i2i:localization",
+      "name": "Localization",
+      "modality": "i2i",
+      "family": "RORG",
+      "definition": "Mark the region of an input image matching a referring expression.",
+      "source_id": "localization"
+    },
+    {
+      "id": "i2t:REFERENTIAL_LOCALIZATION",
+      "name": "Localization",
+      "modality": "i2t",
+      "family": "RORG",
+      "definition": "Return, select, or evaluate the image support of a target—point, box, crop, mask, polygon, foreground region, or 2D segmentation—regardless of whether the target is an object, part, text, symbol, or interface element.",
+      "include": [
+        "object or part detection and referring-expression grounding",
+        "locating text, symbols, labels, document fields, icons, controls, or map features",
+        "selecting or evaluating a target point, box, mask, crop, polygon, or foreground region",
+        "class-free foreground/background or 2D region segmentation whose output is spatial support",
+        "estimating how much image area a referred visible object occupies"
+      ],
+      "exclude": [
+        "a predefined 2D keypoint representation -> i2t:LANDMARKS_JUNCTIONS_2D",
+        "dense semantic class assignment over pixels -> i2t:SEMANTIC_SCENE_PARSING",
+        "a directly visible relative image-plane position between entities -> i2t:RELATIVE_3D_RELATION",
+        "contact, containment, support, overlap, or path/topological connectivity -> i2t:QUALITATIVE_SPATIAL_RELATIONS",
+        "reading an exact alpha intensity at one queried pixel -> OUT_OF_SCOPE",
+        "reasoning over an encoded quantity, rule, or interface transition -> OUT_OF_SCOPE",
+        "naming a semantic object part without returning its spatial support -> i2t:PART_RECOGNITION"
+      ],
+      "decision_test": "Is the requested variable where or how extensively a target occupies the image, including its point/box/mask/foreground support, rather than one pixel's numeric alpha value?",
+      "routing_axis": "the point, extent, mask, foreground support, or class-free 2D segmentation of a target"
+    },
+    {
+      "id": "i2t:QUALITATIVE_SPATIAL_RELATIONS",
+      "name": "Connectivity",
+      "modality": "i2t",
+      "family": "RORG",
+      "definition": "Understand whether entities, regions, or graph elements are connected through contact, attachment, containment, support, overlap, adjacency, intersection, a shared carrier, or a traversable path.",
+      "include": [
+        "touching, attached, intersecting, overlapping, adjacent, or disconnected",
+        "containment, support, membership, and inside/outside topology",
+        "path, road, wire, curve, graph, or region connectivity and reachability",
+        "maze routes, connected components, and whether entities share a carrier or surface"
+      ],
+      "exclude": [
+        "directly visible left/right, above/below, frame position, row/column, quadrant, or projected alignment -> i2t:RELATIVE_3D_RELATION",
+        "front/behind or nearer/farther order along the viewing direction -> i2t:DEPTH_DISTANCE",
+        "real-world distance, size, length, or scale -> i2t:METRIC_3D_RELATION",
+        "heading, facing, gaze, door swing, articulated configuration, or physical-axis orientation -> i2t:SURFACE_ORIENTATION",
+        "one target point, box, crop, mask, polygon, or foreground support -> i2t:REFERENTIAL_LOCALIZATION",
+        "semantic labels assigned densely to pixels or regions -> i2t:SEMANTIC_SCENE_PARSING",
+        "dense geometry-based region partition -> OUT_OF_SCOPE"
+      ],
+      "decision_test": "Is the invariant who touches, contains, supports, overlaps, connects, or is reachable from whom, rather than projected position, depth, distance, or orientation?",
+      "routing_axis": "contact, containment, support, overlap, connection, or reachability topology"
+    },
+    {
+      "id": "i2t:OBJECT_COUNTING",
+      "name": "Counting",
+      "modality": "i2t",
+      "family": "RORG",
+      "definition": "Count a visually selected set, compare set cardinalities, or derive a fraction, proportion, or percentage from visibly identifiable instances, parts, regions, marks, or text elements.",
+      "include": [
+        "how many visually selected objects, people, parts, regions, marks, or text instances exist",
+        "which visible set contains more, fewer, most, or least elements",
+        "what fraction, proportion, or percentage of a visible set satisfies a visual predicate"
+      ],
+      "exclude": [
+        "reading a number that is written in the image -> i2t:OCR_TEXT",
+        "decoding a quantity represented by a chart axis, bar, gauge, or table -> OUT_OF_SCOPE",
+        "measuring real-world size, length, or distance -> i2t:METRIC_3D_RELATION",
+        "reporting an entity or surface orientation without aggregating a set -> i2t:SURFACE_ORIENTATION"
+      ],
+      "decision_test": "Is the final quantity obtained by selecting and aggregating visible instances rather than transcribing text, decoding an encoded display, or measuring physical geometry?",
+      "routing_axis": "a count, cardinality comparison, or proportion derived from a visually selected set"
+    },
+    {
+      "id": "i2t:GLOBAL_ORDERING",
+      "name": "2D Ordering",
+      "modality": "i2t",
+      "family": "RORG",
+      "definition": "Recover the original permutation of externally shuffled visual units using spatial or visual continuity.",
+      "include": [
+        "jigsaw tile or patch reassembly",
+        "ordering shuffled crops, panels, or views from continuity",
+        "recovering the original visual sequence after explicit permutation"
+      ],
+      "exclude": [
+        "the original order of an explicitly shuffled sequence is not requested -> OUT_OF_SCOPE",
+        "one directly visible pairwise or frame-relative image-plane position -> i2t:RELATIVE_3D_RELATION",
+        "camera motion or geometric view transformation -> i2t:MULTIVIEW_VIEWPOINT_REASONING",
+        "tracking the same entity through time without recovering a permutation -> i2t:CORRESPONDENCE_TRACKING",
+        "a semantic event or activity sequence without an explicit shuffle -> i2t:ACTION_RECOGNITION"
+      ],
+      "decision_test": "Were visual units externally permuted, and is the requested output the restoring permutation rather than an event label?",
+      "routing_axis": "the permutation that restores a coherent visual whole"
+    },
+    {
+      "id": "i2t:LANDMARKS_JUNCTIONS_2D",
+      "name": "2D keypoints",
+      "modality": "i2t",
+      "family": "RORG",
+      "definition": "Recover a predefined image-plane keypoint representation: corners, junctions, salient points, or 2D landmarks.",
+      "include": [
+        "detecting corners, T-junctions, or salient 2D keypoints",
+        "choosing or predicting a 2D keypoint map",
+        "localizing predefined anatomical or structural keypoints in image coordinates"
+      ],
+      "exclude": [
+        "localizing an arbitrary referred object, text, control, or region -> i2t:REFERENTIAL_LOCALIZATION",
+        "matching a keypoint across images or frames -> i2t:CORRESPONDENCE_TRACKING",
+        "recovering a point defined by physical 3D geometry -> OUT_OF_SCOPE"
+      ],
+      "decision_test": "Is the target part of a predefined keypoint/junction representation, rather than an arbitrary referent or cross-view match?",
+      "routing_axis": "a 2D keypoint/junction representation"
+    },
+    {
+      "id": "i2t:CORRESPONDENCE_TRACKING",
+      "name": "Visual correspondence",
+      "modality": "i2t",
+      "family": "RORG",
+      "definition": "Establish an explicit localized identity- or function-preserving mapping of a point, patch, part, or entity across indexed images, views, or frames, including tracking and identity-preserving trajectory continuation.",
+      "include": [
+        "mapping a marked point in one image to its matching point in another image",
+        "matching a localized patch, part, object, or indexed entity across views or frames",
+        "tracking the same point or entity through time",
+        "continuing an observed identity-preserving trajectory into candidate future frames"
+      ],
+      "exclude": [
+        "holistic similarity, resemblance, or ranking among complete images without a localized mapping -> i2t:VISUAL_SIMILARITY",
+        "detecting a keypoint within one image -> i2t:LANDMARKS_JUNCTIONS_2D",
+        "recovering the camera or viewpoint transform itself -> i2t:MULTIVIEW_VIEWPOINT_REASONING",
+        "naming a semantic category or known identity without an indexed mapping -> i2t:CATEGORY_INSTANCE",
+        "an abstract visual rule or encoded state transition -> OUT_OF_SCOPE",
+        "restoring an explicitly shuffled visual permutation -> i2t:GLOBAL_ORDERING",
+        "predefined 3D landmark coordinates without cross-view identity mapping -> OUT_OF_SCOPE"
+      ],
+      "decision_test": "Must a localized point, patch, part, entity, or tracked identity in one indexed image/frame be mapped to another, rather than comparing whole images?",
+      "routing_axis": "an explicit localized cross-image/frame mapping or continued track identity"
+    }
+  ]
+}

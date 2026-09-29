@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "id": "gradient_checkpoints",
+  "paper_commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+  "description": "Independent I2I-only checkpoints for the appendix Jigsaw/Zoom-In loss and input-layernorm magnitude table.",
+  "notes": [
+    "Each checkpoint starts independently from BAGEL base EMA. These are literal3000/10000/30000row budgets, distinct from scaling panelb labels.",
+    "The last half of LLM blocks is frozen during I2I; ViT remains trainable and VAE frozen. Data/model seeds42/4396 and condition dropout0.1 match the diagnostic training records.",
+    "The base state requires no training. Apply the same frozen500 evaluation pairs per task to base and each trained state.",
+    "Portable reader selection order can differ from historical readers; use frozen training selections for identical membership/order. These presets do not distribute historical weights."
+  ],
+  "sources": [
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/zoomin_i2i_scale_magnitude_v1/train.py",
+      "sha256": "372e081901b939c04984d48c9c645dd21edd95186c23602dfd953e91d2bc8ca0"
+    },
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/zoomin_i2i_scale_magnitude_v1/common.py",
+      "sha256": "2397399496941dfff539838b77e58cea1118036a0cba4d89196b14e74e013cb8"
+    },
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/jigsaw_i2i3k_only_concat_v1/common.py",
+      "sha256": "d4a68b539f2af3d2466fdedfe1d42f353a40a697654b3f80eb8637a0b3f1f5da"
+    },
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/jigsaw_i2i_scale_128_512_2048_10k_30k_input_ln_v1/common.py",
+      "sha256": "4081ff12790011849f9fe21e83de1095daf63552d5ca0308dea04f5c66ba866e"
+    },
+    {
+      "path": "gen4und/taxonomy/grad_cos_analysis/jigsaw_i2i_scale_128_512_2048_10k_input_ln_v1/training/train.sh",
+      "sha256": "96952660fcf52e2084a72780149009b0d3efe69354e3b256812ccca6ab208735"
+    },
+    {
+      "path": "gen4und/taxonomy/data/gradviz/jigsaw_i2i3k_only_concat_v1_20260916/manifest.json",
+      "sha256": "c158b7cca988fb988eda9e60c3e0b39c5764ebb7eca52e6588fdab3660ff5c36"
+    },
+    {
+      "path": "gen4und/taxonomy/data/gradviz/jigsaw_zoomin_magnitude_summary_v1_20260916/checkpoint_index.csv",
+      "sha256": "876ef949d997c6178d422785f6dfe007bcdb01af1fdc1472a8e50562992ed2ab"
+    }
+  ],
+  "training": {
+    "suite": "controlled",
+    "recipe": "r2",
+    "stop_after_stage1": true,
+    "seeds": [
+      42
+    ],
+    "model_seeds": [
+      4396
+    ],
+    "i2i_seed": 42,
+    "condition_dropout": 0.1,
+    "stage1_freeze_last_half_llm": true
+  },
+  "jobs": [
+    {
+      "id": "jigsaw_3k",
+      "gradient_state": "3k",
+      "training": {
+        "task": "jigsaw",
+        "i2i_manifest": "jigsaw/train/i2i.jsonl",
+        "i2t_manifest": "jigsaw/train/i2t.jsonl",
+        "i2i_budget": 3000,
+        "i2i_pool": 3000
+      }
+    },
+    {
+      "id": "jigsaw_10k",
+      "gradient_state": "10k",
+      "training": {
+        "task": "jigsaw",
+        "i2i_manifest": "jigsaw/train/i2i.jsonl",
+        "i2t_manifest": "jigsaw/train/i2t.jsonl",
+        "i2i_budget": 10000,
+        "i2i_pool": 10000
+      }
+    },
+    {
+      "id": "jigsaw_30k",
+      "gradient_state": "30k",
+      "training": {
+        "task": "jigsaw",
+        "i2i_manifest": "jigsaw/train/i2i.jsonl",
+        "i2t_manifest": "jigsaw/train/i2t.jsonl",
+        "i2i_budget": 30000,
+        "i2i_pool": 30000
+      }
+    },
+    {
+      "id": "zoomin_3k",
+      "gradient_state": "3k",
+      "training": {
+        "task": "zoomin",
+        "i2i_manifest": "zoomin/train/i2i.jsonl",
+        "i2t_manifest": "zoomin/train/i2t.jsonl",
+        "i2i_budget": 3000,
+        "i2i_pool": 3000
+      }
+    },
+    {
+      "id": "zoomin_10k",
+      "gradient_state": "10k",
+      "training": {
+        "task": "zoomin",
+        "i2i_manifest": "zoomin/train/i2i.jsonl",
+        "i2t_manifest": "zoomin/train/i2t.jsonl",
+        "i2i_budget": 10000,
+        "i2i_pool": 10000
+      }
+    },
+    {
+      "id": "zoomin_30k",
+      "gradient_state": "30k",
+      "training": {
+        "task": "zoomin",
+        "i2i_manifest": "zoomin/train/i2i.jsonl",
+        "i2t_manifest": "zoomin/train/i2t.jsonl",
+        "i2i_budget": 30000,
+        "i2i_pool": 30000
+      }
+    }
+  ]
+}

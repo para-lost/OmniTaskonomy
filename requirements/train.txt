@@ -1,0 +1,17 @@
+torch==2.5.1
+torchvision==0.20.1
+transformers==4.49.0
+accelerate==1.13.0
+safetensors==0.4.5
+huggingface-hub==0.29.1
+pyarrow==15.0.0
+numpy==1.24.4
+Pillow==11.3.0
+PyYAML==6.0.2
+einops==0.8.1
+opencv-python==4.7.0.72
+wandb==0.25.1
+sentencepiece==0.1.99
+tqdm==4.67.3
+packaging>=23
+ninja>=1.11

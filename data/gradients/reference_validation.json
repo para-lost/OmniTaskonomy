@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "validation": "Real raw-source conversion and frozen six-task reference; no model inference or backward passes.",
+  "selection_sha256": "a0c212734beee7c9373ae82ef588d04be611738ebd777ead94ea9231fbe483d3",
+  "converter_sha256": "091a40ec27b4ab1b365005b285aef501ad8e32b3c1236207508cc2463b175c57",
+  "paper_reference": true,
+  "counts": {
+    "tasks": 6,
+    "pairs_per_task": 500,
+    "pairs": 3000,
+    "objective_rows": 6000,
+    "groups": 12,
+    "folds": 5,
+    "pairs_per_fold_per_task": 100
+  },
+  "tasks": {
+    "jigsaw": {
+      "i2i_manifest_sha256": "b6a8102b6894810d5cabde1034b02f10b62a797f1063d49699ed71ea39b4b58a",
+      "i2t_manifest_sha256": "394e2d5ebe989d91b4e642ba7c410b7f54ab982a02fb02c860821c034cb9ea3c",
+      "frozen_manifest_sha256": "b60b71a7270ab0a7f543f1aaa7a15f8be3d006dcba030446767b5150f000d529"
+    },
+    "zoomin": {
+      "i2i_manifest_sha256": "76d62bde5cc1aacba42fedc68be9e68ee19c65f3a9723c2437886cdcb5884c7c",
+      "i2t_manifest_sha256": "f1610228f8d5303216c57ea6799df9dbce3de9de1aef5e575770ba7586929a1f",
+      "frozen_manifest_sha256": "68f49c83f4a981a1564832949df9f6f03c8dd3b31161bb1d8853e54048b29d7a"
+    },
+    "video_unshuffle_3d": {
+      "i2i_manifest_sha256": "efc6ed25e92b54188755c3149d4d7bc31292b2b7c123a6c3018107f358aae79d",
+      "i2t_manifest_sha256": "af6c623506701a4e8ddb297c39a9d7058edd2421c13b0013f1a859c785190a56",
+      "frozen_manifest_sha256": "ddd03c6bbc8d8a2617c0e4026f6e00f12b7fbc45b21eadaa5a4bca99cc2f197f"
+    },
+    "colorization": {
+      "i2i_manifest_sha256": "6f3f8a24638eb153e92c8235895eb744e3d8bdfe621d675f8d7a5394506f55c1",
+      "i2t_manifest_sha256": "ae40e4b1bbe99178231806b9c1a46db9a27959cd2eac6dd4c1fe8e9ba9608dfc",
+      "frozen_manifest_sha256": "d2bf2286662f6e721a1f02ff2808c4be728de2aaf16b2bed80f6a68d743380fb"
+    },
+    "rotate_qa": {
+      "i2i_manifest_sha256": "289530d5f02dcec67014d5acefe41f8ee217d04e16006229e119f1d90dfac158",
+      "i2t_manifest_sha256": "6eeb515dd803b1e5174e18efd59aa16201e167a02269831eeed9e64e44322601",
+      "frozen_manifest_sha256": "44c1968135c6460a0d8cfe417e1082ace89aaa80db0a79cd8a93dfa030ee224f"
+    },
+    "counting": {
+      "i2i_manifest_sha256": "9c34ea67e0b88dee90f917336ddcb98e22ea2c172c86925d03fafb2d1347c3f6",
+      "i2t_manifest_sha256": "ce1a6a1aa866fd3992c958a535cb62787a4e3d1533837a0dd80497b3e1b7439e",
+      "frozen_manifest_sha256": "c61f61bfbe3c9141634153f9cea0892150ac6d47a8881fd4e7d4a8d5cfea7301"
+    }
+  },
+  "full_frozen_manifest_sha256": "2a9aa358f724d953827792b3fed4a1c96470b3cef09e2d022f13c30ba23a7bfd"
+}

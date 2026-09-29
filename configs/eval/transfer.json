@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "taxonomy": "../../data/taxonomy",
+  "models": {
+    "i2t_baseline": {"task_id": null},
+    "surface_normals": {"task_id": "i2i:surface_normals"}
+  },
+  "baseline": "i2t_baseline",
+  "benchmarks": ["BLINK"],
+  "runs": [
+    {
+      "model": "i2t_baseline",
+      "seed": 42,
+      "model_seed": 4396,
+      "judge": "exact_matching",
+      "scores": {
+        "BLINK": {
+          "path": "../../outputs/i2t_baseline_eval/seed_42/scored/i2t_baseline_BLINK_exact_matching_result.xlsx"
+        }
+      }
+    },
+    {
+      "model": "surface_normals",
+      "seed": 42,
+      "model_seed": 4396,
+      "judge": "exact_matching",
+      "scores": {
+        "BLINK": {
+          "path": "../../outputs/surface_normals_eval/seed_42/scored/surface_normals_BLINK_exact_matching_result.xlsx"
+        }
+      }
+    },
+    {
+      "model": "i2t_baseline",
+      "seed": 43,
+      "model_seed": 4397,
+      "judge": "exact_matching",
+      "scores": {
+        "BLINK": {
+          "path": "../../outputs/i2t_baseline_eval/seed_43/scored/i2t_baseline_BLINK_exact_matching_result.xlsx"
+        }
+      }
+    },
+    {
+      "model": "surface_normals",
+      "seed": 43,
+      "model_seed": 4397,
+      "judge": "exact_matching",
+      "scores": {
+        "BLINK": {
+          "path": "../../outputs/surface_normals_eval/seed_43/scored/surface_normals_BLINK_exact_matching_result.xlsx"
+        }
+      }
+    },
+    {
+      "model": "i2t_baseline",
+      "seed": 44,
+      "model_seed": 4398,
+      "judge": "exact_matching",
+      "scores": {
+        "BLINK": {
+          "path": "../../outputs/i2t_baseline_eval/seed_44/scored/i2t_baseline_BLINK_exact_matching_result.xlsx"
+        }
+      }
+    },
+    {
+      "model": "surface_normals",
+      "seed": 44,
+      "model_seed": 4398,
+      "judge": "exact_matching",
+      "scores": {
+        "BLINK": {
+          "path": "../../outputs/surface_normals_eval/seed_44/scored/surface_normals_BLINK_exact_matching_result.xlsx"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "notes": [
+    "Legacy raw-source layout for prepare-reference --source-root. Without --source-root, the frozen pairs are restored from Wakals/OmniTaskonomy_Recipe_Data.",
+    "Every path is relative to --source-root. Edit this file to match a downloaded raw-data layout; absolute paths are also accepted.",
+    "Only frozen selected records are converted. Record digests authenticate embedded episode pixels; Rotate-QA separately authenticates COCO source and rotated target files.",
+    "Reference Colorization uses palette/circled-region episodes; it is distinct from grayscale-to-RGB transfer Colorization."
+  ],
+  "tasks": {
+    "jigsaw": {
+      "i2i": {
+        "jsonl": [
+          "visgym_data/jigsaw/reorder/train/*.jsonl"
+        ]
+      },
+      "i2t": {
+        "jsonl": [
+          "visgym_data/jigsaw/reorder/train/*.jsonl"
+        ]
+      }
+    },
+    "zoomin": {
+      "i2i": {
+        "jsonl": [
+          "visgym_data/zoom_in_puzzle/reorder/train/*.jsonl"
+        ]
+      },
+      "i2t": {
+        "jsonl": [
+          "visgym_data/zoom_in_puzzle/reorder/train/*.jsonl"
+        ]
+      }
+    },
+    "video_unshuffle_3d": {
+      "i2i": {
+        "jsonl": [
+          "video_unshuffle_3d/reorder/train/*.jsonl"
+        ]
+      },
+      "i2t": {
+        "jsonl": [
+          "video_unshuffle_3d/reorder/train/*.jsonl"
+        ]
+      }
+    },
+    "colorization": {
+      "i2i": {
+        "jsonl": [
+          "colorization_new/i2i/train/*.jsonl"
+        ]
+      },
+      "i2t": {
+        "jsonl": [
+          "colorization_new/i2t/train/*.jsonl"
+        ]
+      }
+    },
+    "counting": {
+      "i2i": {
+        "jsonl": [
+          "visgym_data/counting/mark_all/train/*.jsonl"
+        ]
+      },
+      "i2t": {
+        "jsonl": [
+          "visgym_data/counting/guess_only/train/*.jsonl"
+        ]
+      }
+    },
+    "rotate_qa": {
+      "i2i": {
+        "jsonl": [
+          "rotate_qa/train/train_set.jsonl"
+        ],
+        "images": "rotate_qa/train/images",
+        "source_images": "coco2017"
+      },
+      "i2t": {
+        "jsonl": [
+          "rotate_qa/train/train_set.jsonl"
+        ],
+        "images": "rotate_qa/train/images",
+        "source_images": "coco2017"
+      }
+    }
+  }
+}

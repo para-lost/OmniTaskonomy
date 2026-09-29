@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "id": "transfer",
+  "paper_commit": "5b8799e50db8d53ce697eeafc8b591b7fddb94af",
+  "description": "All 19 I2I source tasks and the paired I2T-only baseline.",
+  "notes": [
+    "Stage1 is trained once per source with data/model42/4396; stage2 seeds42/43/44 all load those same raw weights.",
+    "LLaVA baseline and source stage2 use identical data/model seed pairs.",
+    "Seven source-task pools are published at https://huggingface.co/datasets/Wakals/OmniTaskonomy (i2i config). The twelve Taskonomy pools are restored from official sources using the published ID lists when their local manifests are missing. Other pools, including LLaVA, still require local JSONL manifests.",
+    "Transfer Colorization is Taskonomy grayscale-to-RGB; semantic segmentation targets resize with nearest interpolation.",
+    "Jigsaw and Object pointing stage1 use16 per GPU; other stage1 and all I2T stages use4 per GPU with4 accumulation steps at four GPUs."
+  ],
+  "sources": [
+    {
+      "path": "gen4und/repro/r2_50k_dropout0_20260918/README.md",
+      "sha256": "0c225ace6590f7af4d260966888bdaab8f2298aedef7feb2cfbaaa709d48117c"
+    },
+    {
+      "path": "gen4und/repro/taskonomy_colorization_llava_20260921/configs/colorization_i2i_50000.yaml",
+      "sha256": "90bee834c6aa5937f49cb9e409cf06c7441b18da3aa0560cced49ded9cbf3b6e"
+    }
+  ],
+  "training": {
+    "suite": "transfer",
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "model_seeds": [
+      4396,
+      4397,
+      4398
+    ],
+    "i2i_seed": 42,
+    "i2i_budget": 50000,
+    "i2t_budget": 50000,
+    "i2t_pool": 50000,
+    "condition_dropout": 0.0,
+    "i2t_manifest": "llava/train.jsonl"
+  },
+  "jobs": [
+    {"id": "i2t_baseline", "task_id": null, "training": {"task": "i2t_baseline", "recipe": "r1"}},
+    {"id": "category_stage1", "task_id": "i2i:object_replacement", "training": {"task": "category", "recipe": "r2", "i2i_manifest": "object_editing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "category", "task_id": "i2i:object_replacement", "stage1_from": "category_stage1", "training": {"task": "category", "recipe": "r2", "i2i_manifest": "object_editing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "appearance_stage1", "task_id": "i2i:attribute_editing", "training": {"task": "appearance", "recipe": "r2", "i2i_manifest": "attribute_editing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "appearance", "task_id": "i2i:attribute_editing", "stage1_from": "appearance_stage1", "training": {"task": "appearance", "recipe": "r2", "i2i_manifest": "attribute_editing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "colorization_stage1", "task_id": "i2i:colorization", "training": {"task": "colorization", "recipe": "r2", "i2i_manifest": "colorization/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "colorization", "task_id": "i2i:colorization", "stage1_from": "colorization_stage1", "training": {"task": "colorization", "recipe": "r2", "i2i_manifest": "colorization/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "depth_zbuffer_stage1", "task_id": "i2i:z_depth", "training": {"task": "depth_zbuffer", "recipe": "r2", "i2i_manifest": "depth_zbuffer/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "depth_zbuffer", "task_id": "i2i:z_depth", "stage1_from": "depth_zbuffer_stage1", "training": {"task": "depth_zbuffer", "recipe": "r2", "i2i_manifest": "depth_zbuffer/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "depth_euclidean_stage1", "task_id": "i2i:euclidean_depth", "training": {"task": "depth_euclidean", "recipe": "r2", "i2i_manifest": "depth_euclidean/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "depth_euclidean", "task_id": "i2i:euclidean_depth", "stage1_from": "depth_euclidean_stage1", "training": {"task": "depth_euclidean", "recipe": "r2", "i2i_manifest": "depth_euclidean/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "normal_stage1", "task_id": "i2i:surface_normals", "training": {"task": "normal", "recipe": "r2", "i2i_manifest": "normal/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "normal", "task_id": "i2i:surface_normals", "stage1_from": "normal_stage1", "training": {"task": "normal", "recipe": "r2", "i2i_manifest": "normal/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "principal_curvature_stage1", "task_id": "i2i:principal_curvature", "training": {"task": "principal_curvature", "recipe": "r2", "i2i_manifest": "principal_curvature/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "principal_curvature", "task_id": "i2i:principal_curvature", "stage1_from": "principal_curvature_stage1", "training": {"task": "principal_curvature", "recipe": "r2", "i2i_manifest": "principal_curvature/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "edge_occlusion_stage1", "task_id": "i2i:occlusion_edges", "training": {"task": "edge_occlusion", "recipe": "r2", "i2i_manifest": "edge_occlusion/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "edge_occlusion", "task_id": "i2i:occlusion_edges", "stage1_from": "edge_occlusion_stage1", "training": {"task": "edge_occlusion", "recipe": "r2", "i2i_manifest": "edge_occlusion/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "keypoints3d_stage1", "task_id": "i2i:keypoints_3d", "training": {"task": "keypoints3d", "recipe": "r2", "i2i_manifest": "keypoints3d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "keypoints3d", "task_id": "i2i:keypoints_3d", "stage1_from": "keypoints3d_stage1", "training": {"task": "keypoints3d", "recipe": "r2", "i2i_manifest": "keypoints3d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "reshading_stage1", "task_id": "i2i:reshading", "training": {"task": "reshading", "recipe": "r2", "i2i_manifest": "reshading/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "reshading", "task_id": "i2i:reshading", "stage1_from": "reshading_stage1", "training": {"task": "reshading", "recipe": "r2", "i2i_manifest": "reshading/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "inpainting_stage1", "task_id": "i2i:inpainting", "training": {"task": "inpainting", "recipe": "r2", "i2i_manifest": "inpainting/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "inpainting", "task_id": "i2i:inpainting", "stage1_from": "inpainting_stage1", "training": {"task": "inpainting", "recipe": "r2", "i2i_manifest": "inpainting/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "semseg_stage1", "task_id": "i2i:semantic_segmentation", "training": {"task": "semseg", "recipe": "r2", "i2i_manifest": "semantic_segmentation/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "nearest", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "semseg", "task_id": "i2i:semantic_segmentation", "stage1_from": "semseg_stage1", "training": {"task": "semseg", "recipe": "r2", "i2i_manifest": "semantic_segmentation/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "nearest", "batch_size": 4}},
+    {"id": "edge_texture_stage1", "task_id": "i2i:edges_2d", "training": {"task": "edge_texture", "recipe": "r2", "i2i_manifest": "edge_texture/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "edge_texture", "task_id": "i2i:edges_2d", "stage1_from": "edge_texture_stage1", "training": {"task": "edge_texture", "recipe": "r2", "i2i_manifest": "edge_texture/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "keypoints2d_stage1", "task_id": "i2i:keypoints_2d", "training": {"task": "keypoints2d", "recipe": "r2", "i2i_manifest": "keypoints2d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "keypoints2d", "task_id": "i2i:keypoints_2d", "stage1_from": "keypoints2d_stage1", "training": {"task": "keypoints2d", "recipe": "r2", "i2i_manifest": "keypoints2d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "segment_unsup2d_stage1", "task_id": "i2i:segmentation_2d", "training": {"task": "segment_unsup2d", "recipe": "r2", "i2i_manifest": "segment_unsup2d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "segment_unsup2d", "task_id": "i2i:segmentation_2d", "stage1_from": "segment_unsup2d_stage1", "training": {"task": "segment_unsup2d", "recipe": "r2", "i2i_manifest": "segment_unsup2d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "segment_unsup25d_stage1", "task_id": "i2i:segmentation_25d", "training": {"task": "segment_unsup25d", "recipe": "r2", "i2i_manifest": "segment_unsup25d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "segment_unsup25d", "task_id": "i2i:segmentation_25d", "stage1_from": "segment_unsup25d_stage1", "training": {"task": "segment_unsup25d", "recipe": "r2", "i2i_manifest": "segment_unsup25d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "counting_stage1", "task_id": "i2i:object_pointing", "training": {"task": "counting", "recipe": "r2", "i2i_manifest": "object_pointing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 16}},
+    {"id": "counting", "task_id": "i2i:object_pointing", "stage1_from": "counting_stage1", "training": {"task": "counting", "recipe": "r2", "i2i_manifest": "object_pointing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "jigsaw_stage1", "task_id": "i2i:jigsaw", "training": {"task": "jigsaw", "recipe": "r2", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 16}},
+    {"id": "jigsaw", "task_id": "i2i:jigsaw", "stage1_from": "jigsaw_stage1", "training": {"task": "jigsaw", "recipe": "r2", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "localization_stage1", "task_id": "i2i:localization", "training": {"task": "localization", "recipe": "r2", "i2i_manifest": "localization/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
+    {"id": "localization", "task_id": "i2i:localization", "stage1_from": "localization_stage1", "training": {"task": "localization", "recipe": "r2", "i2i_manifest": "localization/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}}
+  ]
+}
