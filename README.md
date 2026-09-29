@@ -84,8 +84,8 @@ Follow the [custom UMM guide](docs/custom_umm.md) to run the same training, eval
 % BibTeX pending.
 ```
 
-Dataset license: [source licenses](https://huggingface.co/datasets/Wakals/OmniTaskonomy/blob/main/LICENSE.md). 
+Dataset license: [dataset licenses](https://huggingface.co/datasets/Wakals/OmniTaskonomy/blob/main/LICENSE.md). Model license: [BAGEL license](Bagel/LICENSE). Evaluation framework license: [VLMEvalKit license](VLMEvalKit/LICENSE).
 
-We greatly thank [BAGEL](Bagel/LICENSE), [VLMEvalKit](VLMEvalKit/LICENSE) for their open-source code.
+We greatly thank [BAGEL](https://github.com/bytedance-seed/BAGEL), [VLMEvalKit](https://github.com/open-compass/VLMEvalKit) for their open-source code.
 
 If you have any question or idea to discuss with us, feel free to contact: Jiaxin Ge ([gejiaxin01@gmail.com](mailto:gejiaxin01@gmail.com)) and Yiming Qin ([ymk4474@gmail.com](mailto:ymk4474@gmail.com))!
