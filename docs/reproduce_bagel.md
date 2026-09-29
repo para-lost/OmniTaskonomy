@@ -30,6 +30,16 @@ python scripts/prepare_taskonomy.py
 
 Data use follows the [Taskonomy](https://github.com/StanfordVL/taskonomy/blob/master/data/LICENSE) and [Omnidata](https://github.com/EPFL-VILAB/omnidata/blob/main/LICENSE) terms.
 
+### Transfer data
+
+Prepare the seven released I2I sources and the fixed 50,000-example LLaVA pool. Missing COCO images trigger a download of the full `train2017.zip` archive; only the selected images are extracted.
+
+```bash
+python scripts/prepare_transfer.py
+```
+
+Use `--llava-json /path/to/llava_instruct_150k.json --coco-root /path/to/coco` to reuse local source data.
+
 ### Recipe data
 
 [Wakals/OmniTaskonomy_Recipe_Data](https://huggingface.co/datasets/Wakals/OmniTaskonomy_Recipe_Data) contains six paired I2I/I2T subsets: `jigsaw`, `zoomin`, `video_unshuffle`, `rotate_qa`, `counting`, and `visgym_colorization`. Each has `train` and `val` splits.
@@ -70,7 +80,7 @@ python scripts/run_experiment.py --config configs/experiments/controlled_scaling
 - [`controlled_scaling.json`](../configs/experiments/controlled_scaling.json): Jigsaw/Zoom-In, R1–R6, four I2I budgets, data seeds 42/123/456.
 - [`controlled_i2t_scaling_three_seed.json`](../configs/experiments/controlled_i2t_scaling_three_seed.json): four I2T pool sizes, 30k visits, three seeds.
 - [`transfer.json`](../configs/experiments/transfer.json): 19 I2I sources and the LLaVA baseline, seeds 42/43/44.
-- [`instance_paper_15ep.json`](../configs/experiments/instance_paper_15ep.json): 15 epochs with the standard trainable scope.
+- [`instance_paper_15ep.json`](../configs/experiments/instance_paper_15ep.json): 15 I2T epochs.
 - [`gradient_checkpoints.json`](../configs/experiments/gradient_checkpoints.json): independent Jigsaw/Zoom-In I2I runs at 3k/10k/30k.
 
 </details>
@@ -108,6 +118,14 @@ python scripts/analyze_gradients.py modules --model-path "$OMNI_MODEL" --output 
 ```
 
 ## Gradients across the transfer matrix
+
+Prepare the matrix inputs from the training manifests above and the released I2T evaluation examples:
+
+```bash
+python scripts/prepare_gradient_matrix.py
+```
+
+This rebuilds the sample pools from the public release; it does not recover the historical frozen selection.
 
 ```bash
 python scripts/analyze_gradients.py matrix --config data/prepared/gradients/transfer.json --reference outputs/gradients/modules --model-path "$OMNI_MODEL" --output outputs/gradients/transfer

@@ -73,7 +73,7 @@ class UMMTrainingTests(unittest.TestCase):
 
     def test_all_six_recipes_execute_and_r4_unfreezes_second_stage(self):
         base = self.weights(self.base)
-        expected_stages = {"r1": ["i2t"], "r2": ["i2i", "i2t"], "r3": ["mixed_to_i2t"],
+        expected_stages = {"r1": ["i2t"], "r2": ["i2i", "i2t"], "r3": ["mixed", "i2t"],
                            "r4": ["i2i", "mixed"], "r5": ["mixed"], "r6": ["i2i", "mixed"]}
         for recipe, expected in expected_stages.items():
             with self.subTest(recipe=recipe):
@@ -96,13 +96,37 @@ class UMMTrainingTests(unittest.TestCase):
                                 for row in records]
                     self.assertEqual(policies, ["generation", "all"])
                 if recipe == "r3":
-                    directory = Path(records[0]["trainable_parameters"]).parent
-                    phases = json.loads((directory / "completion.json").read_text())["phases"]
+                    phases = [json.loads(Path(record["trainable_parameters"]).with_name(
+                        "completion.json").read_text())["phases"][0] for record in records]
                     self.assertEqual([(phase["optimizer_updates_before"], phase["optimizer_updates_after"])
-                                      for phase in phases], [(0, 1), (1, 2)])
+                                      for phase in phases], [(0, 1), (0, 1)])
                     self.assertEqual([phase["condition_dropout"] for phase in phases], [0.1, 0.0])
-                    # Resetting warmup at the phase boundary would make both updates use zero LR.
-                    self.assertFalse(torch.equal(self.weights(records[0]["checkpoint"])["shared.weight"], base["shared.weight"]))
+                    # Each one-update stage starts warmup at zero learning rate.
+                    torch.testing.assert_close(self.weights(records[-1]["checkpoint"])["shared.weight"],
+                                               base["shared.weight"], rtol=0, atol=0)
+
+    def test_r3_reloads_mixed_weights_and_restarts_optimizer_and_warmup(self):
+        plan = self.plan("r3", extra=("--i2t-budget", "256", "--condition-dropout", "0.1"))
+        with patch("omnitaskonomy.umm_training.torch.optim.AdamW", wraps=torch.optim.AdamW) as optimizer:
+            records = json.loads(run(plan).read_text())["records"]
+        self.assertEqual(optimizer.call_count, 2)
+        first, final = records
+        self.assertEqual(final["initialization"], first["checkpoint"])
+        self.assertEqual([row["sample_visits"] for row in records], [128, 128])
+        self.assertEqual([row["optimizer_updates"] for row in records], [2, 2])
+        self.assertEqual([row["objective_visits"] for row in records],
+                         [{"i2i": 16, "i2t": 128}, {"i2i": 0, "i2t": 128}])
+        for record in records:
+            log = Path(record["trainable_parameters"]).with_name("progress.jsonl")
+            progress = [json.loads(line) for line in log.read_text().splitlines()]
+            self.assertEqual([row["next_learning_rate"] for row in progress],
+                             [plan["learning_rate"] / 8, plan["learning_rate"] * 2 / 8])
+        mixed_weights = self.weights(first["checkpoint"])
+        final_weights = self.weights(final["checkpoint"])
+        self.assertFalse(torch.equal(mixed_weights["shared.weight"], self.weights(self.base)["shared.weight"]))
+        self.assertFalse(torch.equal(final_weights["shared.weight"], mixed_weights["shared.weight"]))
+        torch.testing.assert_close(final_weights["generation.weight"], mixed_weights["generation.weight"],
+                                   rtol=0, atol=0)
 
     @torch.enable_grad()
     def test_mixed_objectives_have_equal_weight_despite_different_batch_sizes(self):

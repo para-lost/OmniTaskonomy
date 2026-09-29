@@ -6,7 +6,7 @@
   "notes": [
     "Both stages retrain for every data/model seed pair; no cross-seed stage1 sharing.",
     "All four historical seed pairs are preserved. The published three-seed selection was post hoc, after inspecting results.",
-    "The observed protocol freezes the last half of LLM layers in stage1 and uses30 I2T epochs; paper prose describes standard trainable modules and15 epochs. They are separate protocols.",
+    "Train I2T for 15 epochs over 1,000 examples. All LLM layers and the ViT are trainable; the VAE remains frozen. I2I conditioning dropout is 0.1.",
     "Evaluate I2I and I2T from the same final checkpoint on the same1000 held-out inputs for each task."
   ],
   "sources": [

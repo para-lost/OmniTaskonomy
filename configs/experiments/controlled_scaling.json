@@ -6,7 +6,7 @@
   "notes": [
     "Figure scaling panel b. Baseline is trained once per task/seed and reused across plot budgets.",
     "Fixed seed-42 stage-1 checkpoint is shared by stage-2 seeds42/123/456; R2 and R6 reuse the same unfrozen stage1.",
-    "R3 preserves the historical single optimizer across Mixed and I2T phases; the paper appendix instead describes a reset for multi-stage recipes.",
+    "R3 loads the Mixed-stage weights into a separate I2T stage with a fresh optimizer and learning-rate warmup, as described in the paper appendix.",
     "R4 stage 1 trains generation-specific parameters while freezing understanding and shared parameters; stage 2 trains Mixed with the standard trainable parameters.",
     "These are executable protocol presets, not a claim of newly reproduced scores or currently downloadable historical checkpoints."
   ],

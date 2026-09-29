@@ -188,18 +188,11 @@ def build_plan(args):
         mixed = {"i2i": group("i2i", generation_batch // divisor), "i2t": group("i2t", batch)}
         if recipe == "mixed-to-i2t":
             first_half = i2t_budget // 2
-            if args.suite == "controlled":
-                first_half = ((first_half + effective_batch - 1) // effective_batch) * effective_batch
+            first_half = ((first_half + effective_batch - 1) // effective_batch) * effective_batch
             if min(first_half, i2t_budget - first_half) < effective_batch:
-                raise ValueError("Mixed→I2T needs at least one optimizer update in each phase")
-            phases = {"mixed.yaml": mixed, "i2t.yaml": pure_i2t}
-            curriculum = {"curriculum": [
-                {"dataset_config_file": "mixed.yaml", "num_samples": first_half, "target_dataset_name": "i2t",
-                 "conditioning_dropout_prob": dropout},
-                {"dataset_config_file": "i2t.yaml", "num_samples": i2t_budget - first_half, "target_dataset_name": "i2t",
-                 "conditioning_dropout_prob": 0.0},
-            ]}
-            add("mixed_to_i2t", curriculum, i2t_budget, "i2t", phases=phases)
+                raise ValueError("Mixed→I2T needs at least one optimizer update in each stage")
+            add("mixed", mixed, first_half, "i2t")
+            add("i2t", pure_i2t, i2t_budget - first_half, "")
         else:
             add("mixed", mixed, i2t_budget, "i2t")
     plan = {"task": args.task, "recipe": recipe, "suite": args.suite,

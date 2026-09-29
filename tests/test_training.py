@@ -48,14 +48,15 @@ class TrainingPlanTests(unittest.TestCase):
             self.assertEqual(launch["--freeze_und"], "False")
 
     def test_all_controlled_recipes_and_frozen_scope(self):
-        expected = {"r1": ["i2t"], "r2": ["i2i", "i2t"], "r3": ["mixed_to_i2t"],
+        expected = {"r1": ["i2t"], "r2": ["i2i", "i2t"], "r3": ["mixed", "i2t"],
                     "r4": ["i2i", "mixed"], "r5": ["mixed"], "r6": ["i2i", "mixed"]}
         for recipe, names in expected.items():
             with self.subTest(recipe=recipe):
                 plan = build_plan(arguments(Path("/fixture"), "--recipe", recipe, "--suite", "controlled"))
                 self.assertEqual([s["name"] for s in plan["stages"]], names)
                 self.assertEqual(plan["requested_i2t_budget"], 15000)
-                self.assertEqual(plan["stages"][-1]["budget"], 15040)
+                i2t_stages = [stage for stage in plan["stages"] if stage["name"] != "i2i"]
+                self.assertEqual(sum(stage["budget"] for stage in i2t_stages), 15040)
                 self.assertEqual(plan["batch_size"], 16)
                 self.assertEqual(plan["gradient_accumulation"], 1)
                 for stage in plan["stages"]:
@@ -72,26 +73,27 @@ class TrainingPlanTests(unittest.TestCase):
                         if "i2t" in groups:
                             self.assertEqual(groups["i2t"]["num_used_data"], 1000)
                 if recipe == "r3":
-                    stage = plan["stages"][0]
-                    phases = stage["dataset_config"]["curriculum"]
-                    self.assertEqual([p["num_samples"] for p in phases], [7552, 7488])
-                    self.assertEqual([p["conditioning_dropout_prob"] for p in phases], [0.1, 0.0])
-                    self.assertEqual(stage["phase_configs"]["mixed.yaml"]["i2i"]["fixed_batch_size"], 32)
+                    mixed, pure = plan["stages"]
+                    self.assertEqual([mixed["budget"], pure["budget"]], [7552, 7488])
+                    self.assertEqual(mixed["dataset_config"]["i2i"]["fixed_batch_size"], 32)
+                    self.assertEqual(list(pure["dataset_config"]), ["i2t"])
 
     def test_controlled_separates_model_and_modality_seeds(self):
         plan = build_plan(arguments(Path("/fixture"), "--suite", "controlled", "--recipe", "r3",
                                     "--seeds", "42", "123", "456"))
-        stage = plan["stages"][0]
+        mixed, pure = plan["stages"]
         self.assertEqual(plan["model_seeds"], [4396, 4396, 4396])
         for seed in plan["seeds"]:
-            config = dataset_configs(plan, stage, seed)
-            self.assertEqual(config["mixed.yaml"]["i2i"]["data_seed"], 42)
-            self.assertEqual(config["mixed.yaml"]["i2t"]["data_seed"], seed)
-            self.assertEqual(config["i2t.yaml"]["i2t"]["data_seed"], seed)
-            self.assertTrue(config["i2t.yaml"]["i2t"]["shuffle_before_slice"])
-            argv = flags(command(plan, stage, seed, Path("/out"), plan["model_path"]))
+            mixed_config = dataset_configs(plan, mixed, seed)["dataset.yaml"]
+            pure_config = dataset_configs(plan, pure, seed)["dataset.yaml"]
+            self.assertEqual(mixed_config["i2i"]["data_seed"], 42)
+            self.assertEqual(mixed_config["i2t"]["data_seed"], seed)
+            self.assertEqual(pure_config["i2t"]["data_seed"], seed)
+            self.assertTrue(pure_config["i2t"]["shuffle_before_slice"])
+            argv = flags(command(plan, mixed, seed, Path("/out"), plan["model_path"]))
             self.assertEqual(argv["--global_seed"], "4396")
-        self.assertNotIn("data_seed", stage["phase_configs"]["mixed.yaml"]["i2t"])
+        self.assertNotIn("data_seed", mixed["dataset_config"]["i2t"])
+        self.assertNotIn("data_seed", pure["dataset_config"]["i2t"])
 
         explicit = build_plan(arguments(Path("/fixture"), "--seeds", "42", "123", "789",
                                         "--model-seeds", "4396", "1111", "3333", "--i2i-seed", "7"))
@@ -129,13 +131,31 @@ class TrainingPlanTests(unittest.TestCase):
         self.assertEqual([s["name"] for s in plan["stages"]], ["i2i"])
         self.assertTrue(plan["stop_after_stage1"])
 
-    def test_controlled_curriculum_uses_complete_updates_with_accumulation(self):
+    def test_controlled_r3_stages_use_complete_updates_with_accumulation(self):
         for extra in [[], ["--batch-size", "4"], ["--nproc-per-node", "1"]]:
             plan = build_plan(arguments(Path("/fixture"), "--suite", "controlled", "--recipe", "r3", *extra))
             batch = plan["batch_size"] * plan["nproc_per_node"] * plan["gradient_accumulation"]
-            phases = plan["stages"][0]["dataset_config"]["curriculum"]
-            self.assertEqual([p["num_samples"] // batch for p in phases], [118, 117])
-            self.assertTrue(all(p["num_samples"] % batch == 0 for p in phases))
+            self.assertEqual([stage["budget"] // batch for stage in plan["stages"]], [118, 117])
+            self.assertTrue(all(stage["budget"] % batch == 0 for stage in plan["stages"]))
+
+    def test_r3_starts_i2t_from_mixed_weights_with_fresh_optimizer(self):
+        for suite, budgets in (("controlled", [7552, 7488]), ("transfer", [25024, 24976])):
+            with self.subTest(suite=suite):
+                plan = build_plan(arguments(Path("/fixture"), "--suite", suite, "--recipe", "r3"))
+                mixed, pure = plan["stages"]
+                self.assertEqual([mixed["budget"], pure["budget"]], budgets)
+                effective_batch = plan["batch_size"] * plan["nproc_per_node"] * plan["gradient_accumulation"]
+                self.assertEqual(mixed["budget"] % effective_batch, 0)
+                first = flags(command(plan, mixed, 42, Path("/out/first"), plan["model_path"]))
+                second = flags(command(plan, pure, 42, Path("/out/second"), "/out/first/checkpoints/final"))
+                self.assertEqual(first["--finetune_from_ema"], "True")
+                self.assertEqual(second["--resume_from"], "/out/first/checkpoints/final")
+                self.assertEqual(second["--finetune_from_ema"], "False")
+                self.assertEqual(second["--resume_model_only"], "True")
+                self.assertEqual(second["--warmup_steps"], first["--warmup_steps"])
+                self.assertEqual(second["--visual_gen"], "False")
+                for field in ("text_cond_dropout_prob", "vae_cond_dropout_prob", "vit_cond_dropout_prob"):
+                    self.assertEqual(second["--" + field], "0.0")
 
     def test_controlled_stage1_rounds_visits_without_changing_pool(self):
         for recipe in ["r2", "r4", "r6"]:
@@ -152,11 +172,11 @@ class TrainingPlanTests(unittest.TestCase):
                     self.assertEqual(stage["dataset_config"]["i2i"]["num_used_data"], pool)
                     self.assertEqual(stage["budget"] % 64, 0)
 
-    def test_curriculum_100k_uses_archived_mixed_batch(self):
+    def test_r3_100k_uses_archived_mixed_batch(self):
         plan = build_plan(arguments(Path("/fixture"), "--suite", "controlled", "--recipe", "r3",
                                     "--i2i-budget", "100000", "--cpu-offload"))
         stage = plan["stages"][0]
-        self.assertEqual(stage["phase_configs"]["mixed.yaml"]["i2i"]["fixed_batch_size"] * 4, 428)
+        self.assertEqual(stage["dataset_config"]["i2i"]["fixed_batch_size"] * 4, 428)
         self.assertEqual(flags(command(plan, stage, 42, Path("/out"), plan["model_path"]))["--cpu_offload"], "True")
 
     def test_single_gpu_accumulates_to_same_effective_batch(self):

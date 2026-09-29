@@ -6,7 +6,7 @@
   "notes": [
     "Stage1 is trained once per source with data/model42/4396; stage2 seeds42/43/44 all load those same raw weights.",
     "LLaVA baseline and source stage2 use identical data/model seed pairs.",
-    "Seven source-task pools are published at https://huggingface.co/datasets/Wakals/OmniTaskonomy (i2i config). The twelve Taskonomy pools are restored from official sources using the published ID lists when their local manifests are missing. Other pools, including LLaVA, still require local JSONL manifests.",
+    "Prepare the seven released I2I pools and the fixed LLaVA pool with scripts/prepare_transfer.py. The twelve Taskonomy pools are restored from official sources using the published ID lists when their local manifests are missing.",
     "Transfer Colorization is Taskonomy grayscale-to-RGB; semantic segmentation targets resize with nearest interpolation.",
     "Jigsaw and Object pointing stage1 use16 per GPU; other stage1 and all I2T stages use4 per GPU with4 accumulation steps at four GPUs."
   ],
@@ -75,8 +75,8 @@
     {"id": "segment_unsup25d", "task_id": "i2i:segmentation_25d", "stage1_from": "segment_unsup25d_stage1", "training": {"task": "segment_unsup25d", "recipe": "r2", "i2i_manifest": "segment_unsup25d/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
     {"id": "counting_stage1", "task_id": "i2i:object_pointing", "training": {"task": "counting", "recipe": "r2", "i2i_manifest": "object_pointing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 16}},
     {"id": "counting", "task_id": "i2i:object_pointing", "stage1_from": "counting_stage1", "training": {"task": "counting", "recipe": "r2", "i2i_manifest": "object_pointing/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
-    {"id": "jigsaw_stage1", "task_id": "i2i:jigsaw", "training": {"task": "jigsaw", "recipe": "r2", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 16}},
-    {"id": "jigsaw", "task_id": "i2i:jigsaw", "stage1_from": "jigsaw_stage1", "training": {"task": "jigsaw", "recipe": "r2", "i2i_manifest": "jigsaw/train/i2i.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
+    {"id": "jigsaw_stage1", "task_id": "i2i:jigsaw", "training": {"task": "jigsaw", "recipe": "r2", "i2i_manifest": "jigsaw/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 16}},
+    {"id": "jigsaw", "task_id": "i2i:jigsaw", "stage1_from": "jigsaw_stage1", "training": {"task": "jigsaw", "recipe": "r2", "i2i_manifest": "jigsaw/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}},
     {"id": "localization_stage1", "task_id": "i2i:localization", "training": {"task": "localization", "recipe": "r2", "i2i_manifest": "localization/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "stop_after_stage1": true, "seeds": [42], "model_seeds": [4396], "batch_size": 4}},
     {"id": "localization", "task_id": "i2i:localization", "stage1_from": "localization_stage1", "training": {"task": "localization", "recipe": "r2", "i2i_manifest": "localization/train.jsonl", "i2i_pool": 50000, "i2i_target_interpolation": "bicubic", "batch_size": 4}}
   ]

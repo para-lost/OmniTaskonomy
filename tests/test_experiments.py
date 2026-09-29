@@ -81,19 +81,28 @@ class PaperExperimentTests(unittest.TestCase):
                     self.assertEqual([stage["name"] for stage in r4["stages"]], ["mixed"])
                     self.assertFalse(r4["stages"][0]["freeze"])
 
-    def test_instance_keeps_posthoc_selection_separate_from_all_runs(self):
-        for name, visits, freeze in [("instance_observed_30ep", 30016, True), ("instance_paper_15ep", 15040, False)]:
-            spec = load_experiment(CONFIGS / (name + ".json"))
-            self.assertEqual(spec["evaluation"]["all_data_seeds"], [42, 123, 456, 789])
-            self.assertEqual(spec["evaluation"]["paper_table_data_seeds"], [42, 123, 789])
-            result = execute(spec, CONFIGS / (name + ".json"), "/data", "/base", "/out", dry_run=True)
-            self.assertEqual(len(result["jobs"]), 8)
-            for job in result["jobs"]:
-                plan = job["plan"]
-                self.assertEqual(plan["i2i_seed"], plan["seeds"][0])
-                self.assertIsNone(plan["stage1_checkpoint"])
-                self.assertEqual(plan["stages"][0]["freeze_last_half_llm"], freeze)
-                self.assertEqual(plan["stages"][1]["budget"], visits)
+    def test_instance_uses_paper_training_protocol_and_preserves_seed_selection(self):
+        config = CONFIGS / "instance_paper_15ep.json"
+        spec = load_experiment(config)
+        self.assertEqual(spec["evaluation"]["all_data_seeds"], [42, 123, 456, 789])
+        self.assertEqual(spec["evaluation"]["paper_table_data_seeds"], [42, 123, 789])
+        result = execute(spec, config, "/data", "/base", "/out", dry_run=True)
+        self.assertEqual(len(result["jobs"]), 8)
+        for job in result["jobs"]:
+            plan = job["plan"]
+            self.assertEqual(plan["i2i_seed"], plan["seeds"][0])
+            self.assertIsNone(plan["stage1_checkpoint"])
+            self.assertEqual(plan["requested_i2t_budget"], 15000)
+            self.assertEqual(plan["stages"][1]["dataset_config"]["i2t"]["num_used_data"], 1000)
+            self.assertEqual(plan["stages"][1]["budget"], 15040)
+            self.assertEqual([stage["condition_dropout"] for stage in plan["stages"]], [0.1, 0.0])
+            for command in job["commands"]:
+                start = command.index(str(BAGEL / "train/pretrain_unified_navit.py")) + 1
+                flags = dict(zip(command[start::2], command[start + 1::2]))
+                for flag in ("--freeze_shared_for_i2i", "--freeze_vit", "--freeze_und", "--freeze_llm_input_ln"):
+                    self.assertEqual(flags[flag], "False")
+                self.assertNotIn("--freeze_llm_layers_ratio_from_end", flags)
+                self.assertEqual(flags["--freeze_vae"], "True")
 
     def test_shared_stage1_resolves_saved_checkpoint_and_reuses_it(self):
         spec = load_experiment(CONFIGS / "controlled_scaling.json")
