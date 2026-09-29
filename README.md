@@ -48,7 +48,7 @@ OmniTaskonomy studies when visual generation improves visual understanding in un
 
 ### Structure of OmniTaskonomy
 
-OmniTaskonomy organizes **19 generation tasks** and **25 understanding capabilities** into Recognition, Reconstruction, and Reorganization, with **9,444 evaluation examples**.
+OmniTaskonomy organizes **19 generation tasks** and **25 understanding capabilities** into Recognition, Reconstruction, and Reorganization.
 
 <p align="center">
   <img src="docs/images/omnitaskonomy.png" width="100%" alt="OmniTaskonomy's three families: Recognition identifies semantic content; Reconstruction recovers geometry and appearance; Reorganization groups, locates, and relates visual elements. Each family contains generation tasks and understanding capabilities.">
@@ -84,6 +84,8 @@ Follow the [custom UMM guide](docs/custom_umm.md) to run the same training, eval
 % BibTeX pending.
 ```
 
-Dataset terms: [source licenses](https://huggingface.co/datasets/Wakals/OmniTaskonomy/blob/main/LICENSE.md). Third-party code: [BAGEL](Bagel/LICENSE), [VLMEvalKit](VLMEvalKit/LICENSE).
+Dataset license: [source licenses](https://huggingface.co/datasets/Wakals/OmniTaskonomy/blob/main/LICENSE.md). 
 
-Correspondence: Jiaxin Ge ([gejiaxin01@gmail.com](mailto:gejiaxin01@gmail.com)) and Yiming Qin ([ymk4474@gmail.com](mailto:ymk4474@gmail.com)).
+We greatly thank [BAGEL](Bagel/LICENSE), [VLMEvalKit](VLMEvalKit/LICENSE) for their open-source code.
+
+If you have any question or idea to discuss with us, feel free to contact: Jiaxin Ge ([gejiaxin01@gmail.com](mailto:gejiaxin01@gmail.com)) and Yiming Qin ([ymk4474@gmail.com](mailto:ymk4474@gmail.com))!
