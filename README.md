@@ -2,7 +2,7 @@
 
 <p align="center">
 <a href="https://gejiaxin.org/">Jiaxin Ge</a><sup>1*</sup> &nbsp; <a href="https://wakals.github.io/">Yiming Qin</a><sup>2,6*</sup> &nbsp; <a href="https://horizonwind2004.github.io/">Ji Xie</a><sup>3</sup> &nbsp; <a href="https://astro-eric.github.io/">Haozhe Jiang</a><sup>1</sup> &nbsp; <a href="https://xhan77.github.io/">Xiaochuang Han</a><sup>4</sup><br>
-<a href="https://www.junyi42.com/">Junyi Zhang</a><sup>1</sup> &nbsp; <a href="https://github.com/a-dai">Andrew M. Dai</a><sup>5</sup> &nbsp; <a href="https://sites.google.com/site/yinfeiyang">Yinfei Yang</a><sup>5</sup> &nbsp; <a href="https://people.eecs.berkeley.edu/~malik/">Jitendra Malik</a><sup>1</sup> &nbsp; <a href="https://ranjaykrishna.com/">Ranjay Krishna</a><sup>4</sup> &nbsp; <a href="https://www.sewonmin.com/">Sewon Min</a><sup>1</sup><br>
+<a href="https://www.junyi42.com/">Junyi Zhang</a><sup>1</sup> &nbsp; <a href="https://github.com/a-dai">Andrew Dai</a><sup>5</sup> &nbsp; <a href="https://sites.google.com/site/yinfeiyang">Yinfei Yang</a><sup>5</sup> &nbsp; <a href="https://people.eecs.berkeley.edu/~malik/">Jitendra Malik</a><sup>1</sup> &nbsp; <a href="https://ranjaykrishna.com/">Ranjay Krishna</a><sup>4</sup> &nbsp; <a href="https://www.sewonmin.com/">Sewon Min</a><sup>1</sup><br>
 <a href="https://havenfeng.github.io/">Haiwen Feng</a><sup>1,6†</sup> &nbsp; <a href="https://www.salesforce.com/blog/author/le-xue/">Le Xue</a><sup>5†</sup> &nbsp; <a href="https://bfshi.github.io/">Baifeng Shi</a><sup>1†</sup> &nbsp; <a href="https://people.eecs.berkeley.edu/~trevor/">Trevor Darrell</a><sup>1†</sup> &nbsp; <a href="https://xudongfrankwang.github.io/">XuDong Wang</a><sup>1,2†</sup>
 </p>
 
