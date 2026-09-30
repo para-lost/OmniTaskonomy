@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="https://omni-taskonomy.github.io/"><img src="https://img.shields.io/badge/Project-Page-2563EB?style=for-the-badge" alt="Project Page"></a>
-  <img src="https://img.shields.io/badge/arXiv-Coming_soon-8B8F98?style=for-the-badge&amp;logo=arxiv&amp;logoColor=white" alt="Arxiv — Coming soon" title="arXiv link pending; the paper PDF is linked below">
+  <a href="https://arxiv.org/abs/2609.38079"><img src="https://img.shields.io/badge/arXiv-2609.38079-B31B1B?style=for-the-badge&amp;logo=arxiv&amp;logoColor=white" alt="arXiv: 2609.38079"></a>
   <a href="https://huggingface.co/datasets/Wakals/OmniTaskonomy"><img src="https://img.shields.io/badge/Hugging_Face-OmniTaskonomy-FFD21E?style=for-the-badge&amp;logo=huggingface&amp;logoColor=white" alt="Huggingface OmniTaskonomy"></a>
 </p>
 
