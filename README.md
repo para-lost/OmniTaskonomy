@@ -181,11 +181,11 @@ OmniTaskonomy/
 If you find OmniTaskonomy useful, please cite:
 
 ```bibtex
-@misc{ge2026omnitaskonomy,
-  title  = {{OmniTaskonomy}: When Does Visual Generation Improve Visual Understanding?},
-  author = {Ge, Jiaxin and Qin, Yiming and Xie, Ji and Jiang, Haozhe and Han, Xiaochuang and Zhang, Junyi and Dai, Andrew and Yang, Yinfei and Malik, Jitendra and Krishna, Ranjay and Min, Sewon and Feng, Haiwen and Xue, Le and Shi, Baifeng and Darrell, Trevor and Wang, XuDong},
-  year   = {2026},
-  url    = {https://omni-taskonomy.github.io/}
+@article{ge2026omnitaskonomy,
+  title={OmniTaskonomy: When Does Visual Generation Improve Visual Understanding?},
+  author={Ge, Jiaxin and Qin, Yiming and Xie, Ji and Jiang, Haozhe and Han, Xiaochuang and Zhang, Junyi and Dai, Andrew and Yang, Yinfei and Malik, Jitendra and Krishna, Ranjay and Min, Sewon and Feng, Haiwen and Xue, Le and Shi, Baifeng and Darrell, Trevor and Wang, XuDong},
+  journal={arXiv preprint arXiv:2609.38079},
+  year={2026}
 }
 ```
 
